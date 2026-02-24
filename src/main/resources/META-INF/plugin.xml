@@ -1,28 +1,51 @@
 <!-- Plugin Configuration File. Read more: https://plugins.jetbrains.com/docs/intellij/plugin-configuration-file.html -->
 <idea-plugin>
-    <!-- Unique identifier of the plugin. It should be FQN. It cannot be changed between the plugin versions. -->
     <id>com.umendes.scheme-redux.scheme-redux</id>
-
-    <!-- Public plugin name should be written in Title Case.
-         Guidelines: https://plugins.jetbrains.com/docs/marketplace/best-practices-for-listing.html#plugin-name -->
     <name>Scheme-Redux</name>
-
-    <!-- A displayed Vendor name or Organization ID displayed on the Plugins Page. -->
     <vendor url="https://github.com/UCMendes">My Github</vendor>
-
-    <!-- Description of the plugin displayed on the Plugin Page and IDE Plugin Manager.
-         Guidelines: https://plugins.jetbrains.com/docs/marketplace/best-practices-for-listing.html#plugin-description -->
     <description>Updated plugin for supporting the Scheme programming language</description>
-
-    <!-- Product and plugin compatibility requirements.
-         Read more: https://plugins.jetbrains.com/docs/intellij/plugin-compatibility.html -->
+    <depends>com.intellij.modules.lang</depends>
     <depends>com.intellij.modules.platform</depends>
 
-    <!-- Extension points defined by the plugin.
-         Read more: https://plugins.jetbrains.com/docs/intellij/plugin-extension-points.html -->
     <extensions defaultExtensionNs="com.intellij">
+
         <fileType name="Scheme"
                   implementationClass="com.umendes.schemeredux.schemeredux.file.SchemeFileType" fieldName="SCHEME_FILE_TYPE"
                   language="Scheme" extensions="ss;scm;sls"/>
+
+        <lang.parserDefinition language="Scheme"
+                               implementationClass="com.umendes.schemeredux.schemeredux.parser.SchemeParserDefinition"/>
+        <lang.findUsagesProvider language="Scheme"
+                                 implementationClass="com.umendes.schemeredux.schemeredux.findUsages.SchemeFindUsagesProvider"/>
+        <lang.braceMatcher language="Scheme"
+                           implementationClass="com.umendes.schemeredux.schemeredux.highlighter.SchemeBraceMatcher"/>
+        <lang.commenter language="Scheme"
+                        implementationClass="com.umendes.schemeredux.schemeredux.highlighter.SchemeCommenter"/>
+        <lang.formatter language="Scheme"
+                        implementationClass="com.umendes.schemeredux.schemeredux.formatter.SchemeFormattingModelBuilder"/>
+        <lang.psiStructureViewFactory language="Scheme"
+                                      implementationClass="com.umendes.schemeredux.schemeredux.structure.SchemeStructureViewBuilderFactory"/>
+        <lang.foldingBuilder language="Scheme"
+                             implementationClass="com.umendes.schemeredux.schemeredux.fold.SchemeFoldingBuilder"/>
+        <lang.namesValidator language="Scheme"
+                             implementationClass="com.umendes.schemeredux.schemeredux.utils.SchemeNamesValidator"/>
+
+        <gotoSymbolContributor implementation="com.umendes.schemeredux.schemeredux.gotoclass.SchemeGoToSymbolContributor"/>
+        <syntaxHighlighter key="Scheme"
+                           implementationClass="com.umendes.schemeredux.schemeredux.highlighter.SchemeSyntaxHighlighter"/>
+        <annotator language="Scheme" implementationClass="com.umendes.schemeredux.schemeredux.annotator.SchemeAnnotator"/>
+
+        <colorSettingsPage implementation="com.umendes.schemeredux.schemeredux.settings.colorScheme.SchemeColorsAndFontsPage"/>
+        <codeStyleSettingsProvider
+                implementation="com.umendes.schemeredux.schemeredux.settings.codeStyle.SchemeCodeStyleSettingsProvider"/>
+        <langCodeStyleSettingsProvider
+                implementation="com.umendes.schemeredux.schemeredux.settings.codeStyle.SchemeLanguageCodeStyleSettingsProvider"/>
+
+        <stubElementTypeHolder class="com.umendes.schemeredux.schemeredux.parser.AST"/>
+        <stubIndex implementation="com.umendes.schemeredux.schemeredux.psi.stubs.index.SchemeClassNameIndex"/>
+        <stubIndex implementation="com.umendes.schemeredux.schemeredux.psi.stubs.index.SchemeFullScriptNameIndex"/>
+
+        <projectService serviceInterface="com.umendes.schemeredux.schemeredux.psi.util.SchemePsiElementFactory"
+                        serviceImplementation="com.umendes.schemeredux.schemeredux.psi.util.SchemePsiElementFactoryImpl"/>
     </extensions>
 </idea-plugin>

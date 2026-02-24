@@ -1,7 +1,7 @@
 plugins {
     id("java")
     id("org.jetbrains.kotlin.jvm") version "2.1.0"
-    id("org.jetbrains.intellij.platform") version "2.7.1"
+    id("org.jetbrains.intellij.platform") version "2.11.0"
 }
 
 group = "com.umendes.schemeredux"
@@ -20,10 +20,9 @@ dependencies {
     intellijPlatform {
         create("IC", "2025.1.4.1")
         testFramework(org.jetbrains.intellij.platform.gradle.TestFrameworkType.Platform)
-
-        // Add necessary plugin dependencies for compilation here, example:
-        // bundledPlugin("com.intellij.java")
     }
+    // Source: https://mvnrepository.com/artifact/org.jparsec/jparsec
+    implementation("org.jparsec:jparsec:3.1")
 }
 
 intellijPlatform {
