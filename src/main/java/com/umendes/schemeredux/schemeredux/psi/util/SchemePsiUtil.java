@@ -3,7 +3,6 @@ package com.umendes.schemeredux.schemeredux.psi.util;
 import com.intellij.lang.ASTNode;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
-import com.intellij.psi.tree.IElementType;
 import com.umendes.schemeredux.schemeredux.parser.AST;
 
 

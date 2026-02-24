@@ -6,7 +6,6 @@ import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.tree.IElementType;
 import com.umendes.schemeredux.schemeredux.psi.impl.*;
-import com.umendes.schemeredux.schemeredux.psi.impl.list.SchemeList;
 import com.umendes.schemeredux.schemeredux.psi.util.SchemePsiUtil;
 
 

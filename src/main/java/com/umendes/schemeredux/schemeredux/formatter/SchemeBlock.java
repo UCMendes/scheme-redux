@@ -101,7 +101,7 @@ public class SchemeBlock implements Block, AST
   protected static boolean nonEmptyBlock(ASTNode node)
   {
     String nodeText = node.getText().trim();
-    return (nodeText.length() > 0);
+    return (!nodeText.isEmpty());
   }
 
   @Nullable
@@ -169,11 +169,7 @@ public class SchemeBlock implements Block, AST
     if (LEAF_ELEMENTS.contains(node.getElementType()) || SchemeTokens.BRACES.contains(node.getElementType())) {
       return true;
     } else {
-      if (node.getFirstChildNode() == null) {
-        return true;
-      } else {
-        return false;
-      }
+      return node.getFirstChildNode() == null;
     }
   }
 }

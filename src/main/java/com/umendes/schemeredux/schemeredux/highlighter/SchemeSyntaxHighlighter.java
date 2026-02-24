@@ -8,6 +8,7 @@ import com.intellij.openapi.editor.markup.TextAttributes;
 import com.intellij.openapi.fileTypes.SyntaxHighlighterBase;
 import com.intellij.psi.tree.IElementType;
 import com.intellij.psi.tree.TokenSet;
+import com.intellij.ui.JBColor;
 import org.jetbrains.annotations.NotNull;
 import com.umendes.schemeredux.schemeredux.lexer.SchemeLexer;
 import com.umendes.schemeredux.schemeredux.lexer.SchemeTokens;
@@ -127,7 +128,7 @@ public class SchemeSyntaxHighlighter extends SyntaxHighlighterBase implements Sc
     }
     else
     {
-      attributes.setForegroundColor(Color.darkGray);
+      attributes.setForegroundColor(JBColor.DARK_GRAY);
     }
     return attributes;
   }

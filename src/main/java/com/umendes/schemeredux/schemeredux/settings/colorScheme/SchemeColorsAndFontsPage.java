@@ -83,26 +83,27 @@ public class SchemeColorsAndFontsPage implements ColorSettingsPage
   @NotNull
   public String getDemoText()
   {
-    String content = SchemeResourceUtil.readResourceAsString("sample-code.scm");
+    String content = SchemeResourceUtil.readResourceAsString("/scheme/sample-code.scm");
     if (content != null) {
       return content;
     }
 
     // Fallback to default demo text
-    return ";; Test highlighting\n" +
-            "\n" +
-            "(define string \"Some string\")\n" +
-            "\n" +
-            "(define quoted '(my quoted 3 items \"with quoted string\"))\n" +
-            "\n" +
-            "(define char #\\c)\n" +
-            "\n" +
-            "(define special #!eof)\n" +
-            "\n" +
-            "(let ((x '(1 3 5 7 9)))\n" +
-            "  (do ((x x (cdr x))\n" +
-            "       (sum 0 (+ sum (car x))))\n" +
-            "      ((null? x) sum)))";
+    return """
+            ;; Test highlighting
+            
+            (define string "Some string")
+            
+            (define quoted '(my quoted 3 items "with quoted string"))
+            
+            (define char #\\c)
+            
+            (define special #!eof)
+            
+            (let ((x '(1 3 5 7 9)))
+              (do ((x x (cdr x))
+                   (sum 0 (+ sum (car x))))
+                  ((null? x) sum)))""";
   }
 
   @Nullable

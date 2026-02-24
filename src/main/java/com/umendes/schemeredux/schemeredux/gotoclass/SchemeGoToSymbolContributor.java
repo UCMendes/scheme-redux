@@ -3,7 +3,6 @@ package com.umendes.schemeredux.schemeredux.gotoclass;
 import com.intellij.navigation.ChooseByNameContributor;
 import com.intellij.navigation.NavigationItem;
 import com.intellij.openapi.project.Project;
-import com.intellij.psi.search.GlobalSearchScope;
 
 import java.util.ArrayList;
 import java.util.HashSet;

@@ -70,19 +70,14 @@ public class SchemeLexer extends LexerBase
    * Tokens
    */
   // Blanks and Comments
-  // Scanner
   Parser<?> SCA_DATUM_COMMENT_PREFIX = Scanners.string("#;");
-  // Tokenizer, allocates datum_comment_prefix to the appropriate tag
   Parser<?> s_datum_comment_prefix = SCA_DATUM_COMMENT_PREFIX.source()
           .map((a) -> (Tokens.fragment(a, Tag.TAG_DATUM_COMMENT_PREFIX)));
 
-  // Scanner, converts a pattern and gives it a name
   Parser<?> SCA_LINE_COMMENT = Patterns.lineComment(";").toScanner(";");
-  // Tokenizer, assigns mached text to a token
   Parser<?> s_line_comment = SCA_LINE_COMMENT.source()
           .map((a) -> (Tokens.fragment(a, Tag.TAG_LINE_COMMENT)));
 
-  // Scanner, for longer comments that don't inlcude the comment
   Parser<?> SCA_BLOCK_COMMENT_CONTENT =
           notChar2('|', '#').many().toScanner("commented block");
   Parser<?> s_block_comment = Parsers.sequence(Scanners.string("#|"),
@@ -95,10 +90,8 @@ public class SchemeLexer extends LexerBase
 
   // Operators
   Pattern PT_OP_SINGLE_CHAR = Patterns.among("()[]'`,");
-  // Turn that pattern into a scanner, and assign tag to what's found
   Parser<?> s_op_single_char = PT_OP_SINGLE_CHAR.toScanner("operator").source()
           .map((a) -> (Tokens.fragment(a, Tag.TAG_OP_SINGLE_CHAR)));
-  // Bytevector = vector of bytes?
   Parser<?> s_op_open_vector = Parsers.or(Scanners.string("#("), Scanners.string("#vu8("))
           .source().map((a) -> (Tokens.fragment(a, Tag.TAG_OP_OPEN_VECTOR)));
   List<String> STRS_ABBREVIATION = asList(",@", "#'", "#`", "#,", "#,@");
@@ -126,7 +119,6 @@ public class SchemeLexer extends LexerBase
           .map((a) -> (Tokens.fragment(a, Tag.TAG_NAME_LITERAL)));
 
   // Numbers
-  // INTEGER matches any integer
   Pattern PT_RIGHT_INTEGER = Patterns.sequence(Patterns.among("+-").optional(), Patterns.INTEGER);
   Parser<String> PAR_RIGHT_INTEGER = PT_RIGHT_INTEGER.toScanner("integer").source();
   Parser<?> PAR_BIN_INTEGER = Patterns.string("#b").or(Patterns.string("#B"))
@@ -137,7 +129,6 @@ public class SchemeLexer extends LexerBase
           .next(Patterns.many1(CharPredicates.range('0', '9'))).toScanner("dec integer").source();
   Parser<?> PAR_HEX_INTEGER = Patterns.string("#x").or(Patterns.string("#X"))
           .next(Patterns.many1(CharPredicates.IS_HEX_DIGIT)).toScanner("hex integer").source();
-  // Parse any of these as a number, and give it the number tag
   Parser<?> s_numbers = Parsers.or(
                   PAR_RIGHT_INTEGER, Scanners.DEC_INTEGER,
                   Scanners.DECIMAL, Scanners.SCIENTIFIC_NOTATION,

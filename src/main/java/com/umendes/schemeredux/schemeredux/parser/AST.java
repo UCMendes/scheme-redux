@@ -7,7 +7,7 @@ import com.umendes.schemeredux.schemeredux.SchemeLanguage;
 
 public interface AST
 {
-  IFileElementType AST_FILE = new IFileElementType(SchemeLanguage.INSTANCE);;
+  IFileElementType AST_FILE = new IFileElementType(SchemeLanguage.INSTANCE);
 
   IElementType AST_PLAIN_LIST = new SchemeElementType("ast plain list");
 

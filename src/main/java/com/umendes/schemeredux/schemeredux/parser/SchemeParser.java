@@ -50,15 +50,8 @@ public class SchemeParser implements PsiParser, SchemeTokens
 
   // Helpers
   boolean isParen(IElementType type) {
-    if (LEFT_PAREN == type || RIGHT_PAREN == type ||
-        LEFT_SQUARE == type || RIGHT_SQUARE == type)
-    {
-      return true;
-    }
-    else
-    {
-      return false;
-    }
+    return LEFT_PAREN == type || RIGHT_PAREN == type ||
+            LEFT_SQUARE == type || RIGHT_SQUARE == type;
   }
 
   IElementType atomMarkType(IElementType type)
@@ -589,79 +582,33 @@ public class SchemeParser implements PsiParser, SchemeTokens
 
   IElementType parseTopAndLocalForm(PsiBuilder builder, IElementType close, String text)
   {
-    IElementType mark_type = null;
-    switch (text) {
-      case "and":
-        mark_type = parseFormAnd(builder, close);
-        break;
-      case "begin":
-        mark_type = parseFormBegin(builder, close);
-        break;
-      case "car":
-        mark_type = parseFormCar(builder, close);
-        break;
-      case "cdr":
-        mark_type = parseFormCdr(builder, close);
-        break;
-      case "cond":
-        mark_type = parseFormCond(builder, close);
-        break;
-      case "cons":
-        mark_type = parseFormCons(builder, close);
-        break;
-      case "define":
-        mark_type = parseFormDefine(builder, close);
-        break;
-      case "define-record-type":
-        mark_type = parseFormDefineRecordType(builder, close);
-        break;
-      case "define-syntax":
-        mark_type = parseFormDefineSyntax(builder, close);
-        break;
-      case "do":
-        mark_type = parseFormDo(builder, close);
-        break;
-      case "export":
-        mark_type = parseFormExport(builder, close);
-        break;
-      case "if":
-        mark_type = parseFormIf(builder, close);
-        break;
-      case "import":
-        mark_type = parseFormImport(builder, close);
-        break;
-      case "lambda":
-        mark_type = parseFormLambda(builder, close);
-        break;
-      case "let":
-        mark_type = parseFormLetForms(builder, close, AST.AST_FORM_LET);
-        break;
-      case "letrec":
-        mark_type = parseFormLetForms(builder, close, AST.AST_FORM_LETREC);
-        break;
-      case "let*":
-        mark_type = parseFormLetForms(builder, close, AST.AST_FORM_LET_A);
-        break;
-      case "list":
-        mark_type = parseFormList(builder, close);
-        break;
-      case "not":
-        mark_type = parseFormNot(builder, close);
-        break;
-      case "or":
-        mark_type = parseFormOr(builder, close);
-        break;
-      case "set!":
-        mark_type = parseFormSet(builder, close);
-        break;
-      case "unless":
-        mark_type = parseFormUnless(builder, close);
-        break;
-      case "when":
-        mark_type = parseFormWhen(builder, close);
-        break;
-    }
-    return mark_type;
+    IElementType mark_type = switch (text) {
+        case "and" -> parseFormAnd(builder, close);
+        case "begin" -> parseFormBegin(builder, close);
+        case "car" -> parseFormCar(builder, close);
+        case "cdr" -> parseFormCdr(builder, close);
+        case "cond" -> parseFormCond(builder, close);
+        case "cons" -> parseFormCons(builder, close);
+        case "define" -> parseFormDefine(builder, close);
+        case "define-record-type" -> parseFormDefineRecordType(builder, close);
+        case "define-syntax" -> parseFormDefineSyntax(builder, close);
+        case "do" -> parseFormDo(builder, close);
+        case "export" -> parseFormExport(builder, close);
+        case "if" -> parseFormIf(builder, close);
+        case "import" -> parseFormImport(builder, close);
+        case "lambda" -> parseFormLambda(builder, close);
+        case "let" -> parseFormLetForms(builder, close, AST.AST_FORM_LET);
+        case "letrec" -> parseFormLetForms(builder, close, AST.AST_FORM_LETREC);
+        case "let*" -> parseFormLetForms(builder, close, AST.AST_FORM_LET_A);
+        case "list" -> parseFormList(builder, close);
+        case "not" -> parseFormNot(builder, close);
+        case "or" -> parseFormOr(builder, close);
+        case "set!" -> parseFormSet(builder, close);
+        case "unless" -> parseFormUnless(builder, close);
+        case "when" -> parseFormWhen(builder, close);
+        default -> null;
+    };
+      return mark_type;
   }
 
   private IElementType parseTopList(PsiBuilder builder, IElementType open, IElementType close)

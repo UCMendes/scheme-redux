@@ -42,30 +42,31 @@ public class SchemeLanguageCodeStyleSettingsProvider extends LanguageCodeStyleSe
 
     @Override
     public String getCodeSample(@NotNull SettingsType settingsType) {
-        String content = SchemeResourceUtil.readResourceAsString("sample-code.scm");
+        String content = SchemeResourceUtil.readResourceAsString("/scheme/sample-code.scm");
         if (content != null) {
             return content;
         }
 
         // Fallback to default code sample
-        return "(f f)\n" +
-                "\n" +
-                "((lambda (f) x) (lambda (f) x))\n" +
-                "\n" +
-                "(define Y (lambda (f) (f f)))\n" +
-                "\n" +
-                "((lambda (f) (lambda (x) ((f f) (g x))))\n" +
-                "  (lambda (f) (lambda (x) ((f f) (g x)))))\n" +
-                " \n" +
-                "((lambda (g)\n" +
-                "    ((lambda (f) (lambda (x) ((f f) (g x))))\n" +
-                "      (lambda (f) (lambda (x) ((f f) (g x))))))\n" +
-                "  cdr)\n" +
-                "\n" +
-                "((lambda (g)\n" +
-                "   ((lambda (f) (f f))\n" +
-                "     (lambda (f) (lambda (x) ((f f) (g x))))))\n" +
-                "  g)";
+        return """
+                (f f)
+                
+                ((lambda (f) x) (lambda (f) x))
+                
+                (define Y (lambda (f) (f f)))
+                
+                ((lambda (f) (lambda (x) ((f f) (g x))))
+                  (lambda (f) (lambda (x) ((f f) (g x)))))
+                \s
+                ((lambda (g)
+                    ((lambda (f) (lambda (x) ((f f) (g x))))
+                      (lambda (f) (lambda (x) ((f f) (g x))))))
+                  cdr)
+                
+                ((lambda (g)
+                   ((lambda (f) (f f))
+                     (lambda (f) (lambda (x) ((f f) (g x))))))
+                  g)""";
     }
 
     @Override

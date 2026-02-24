@@ -20,7 +20,7 @@ public class SchemeResourceUtil {
      */
     @Nullable
     public static String readResourceAsString(String resourcePath) {
-        try (InputStream stream = SchemeResourceUtil.class.getClassLoader().getResourceAsStream(resourcePath)) {
+        try (InputStream stream = SchemeResourceUtil.class.getResourceAsStream(resourcePath)) {
             if (stream != null) {
                 ByteArrayOutputStream buffer = new ByteArrayOutputStream();
                 byte[] data = new byte[1024];
