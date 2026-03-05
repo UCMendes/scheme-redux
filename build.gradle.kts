@@ -21,6 +21,12 @@ dependencies {
     }
     // Source: https://mvnrepository.com/artifact/org.jparsec/jparsec
     implementation("org.jparsec:jparsec:3.1")
+
+    // Source: https://mvnrepository.com/artifact/com.google.mug/dot-parse
+    implementation("com.google.mug:dot-parse:9.9.2")
+
+    // Source: https://mvnrepository.com/artifact/org.junit.jupiter/junit-jupiter-api
+    testImplementation("org.junit.jupiter:junit-jupiter-api:6.0.1")
 }
 
 intellijPlatform {

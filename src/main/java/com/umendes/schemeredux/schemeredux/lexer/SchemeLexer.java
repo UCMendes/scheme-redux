@@ -1,7 +1,6 @@
 package com.umendes.schemeredux.schemeredux.lexer;
 
 import com.intellij.lexer.LexerBase;
-// To define custom tokens
 import com.intellij.psi.tree.IElementType;
 import org.jparsec.Parser;
 import org.jparsec.Parsers;
@@ -54,8 +53,6 @@ public class SchemeLexer extends LexerBase
   // method, you have to state return type, which is what the next line is
   private static Pattern notChar2(final char c1, final char c2) {
     return new Pattern() {
-        // Method of anonymous class that returns int
-        // Unused? Method uses
       @Override public int match(CharSequence src, int begin, int end) {
         if (begin == end - 1) return 1;
         if (begin >= end) return MISMATCH;
@@ -249,8 +246,6 @@ public class SchemeLexer extends LexerBase
             if (null != a) {
 //              System.out.println("a: " + a);
               if (a.getClass() == Tokens.Fragment.class) {
-                  // If this is a valid token, get its type and text, else do the other stuff
-                  // Also, set global variable token-frag to token fragment a, for later sorting
                 token_frag = (Tokens.Fragment)a;
                 System.out.println("type: " + ((Tokens.Fragment)a).tag().toString());
                 System.out.println("text: " + ((Tokens.Fragment)a).text());
