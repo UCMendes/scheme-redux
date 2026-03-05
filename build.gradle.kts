@@ -19,14 +19,10 @@ dependencies {
         create("IC", "2025.1.4.1")
         testFramework(org.jetbrains.intellij.platform.gradle.TestFrameworkType.Platform)
     }
-    // Source: https://mvnrepository.com/artifact/org.jparsec/jparsec
     implementation("org.jparsec:jparsec:3.1")
-
-    // Source: https://mvnrepository.com/artifact/com.google.mug/dot-parse
     implementation("com.google.mug:dot-parse:9.9.2")
-
-    // Source: https://mvnrepository.com/artifact/org.junit.jupiter/junit-jupiter-api
-    testImplementation("org.junit.jupiter:junit-jupiter-api:6.0.1")
+    testImplementation("org.junit.jupiter:junit-jupiter:5.7.1")
+    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 
 intellijPlatform {
@@ -53,4 +49,8 @@ kotlin {
     compilerOptions {
         jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_21)
     }
+}
+
+tasks.named<Test>("test") {
+    useJUnitPlatform()
 }
