@@ -1,0 +1,11 @@
+package com.umendes.schemeredux.psi.impl;
+
+import com.intellij.lang.ASTNode;
+
+public class SchemeFormQuasiquote extends SchemePsiElementBase
+{
+    public SchemeFormQuasiquote(ASTNode node)
+    {
+        super(node, "SchemeFormQuasiquote");
+    }
+}

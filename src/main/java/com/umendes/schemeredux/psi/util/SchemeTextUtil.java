@@ -1,0 +1,18 @@
+package com.umendes.schemeredux.psi.util;
+
+import org.jetbrains.annotations.NotNull;
+
+
+public abstract class SchemeTextUtil
+{
+  public static String getSymbolPrefix(@NotNull String sym, @NotNull String sep)
+  {
+    int index = sym.lastIndexOf(sep);
+    return index > 0 && index < sym.length() - 1 ? sym.substring(0, index) : "";
+  }
+
+  public static String getSymbolPrefix(@NotNull String sym)
+  {
+    return getSymbolPrefix(sym, ".");
+  }
+}

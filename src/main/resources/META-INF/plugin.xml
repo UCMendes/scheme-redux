@@ -10,42 +10,42 @@
     <extensions defaultExtensionNs="com.intellij">
 
         <fileType name="Scheme"
-                  implementationClass="com.umendes.schemeredux.schemeredux.file.SchemeFileType" fieldName="SCHEME_FILE_TYPE"
+                  implementationClass="com.umendes.schemeredux.file.SchemeFileType" fieldName="SCHEME_FILE_TYPE"
                   language="Scheme" extensions="ss;scm;sls"/>
 
         <lang.parserDefinition language="Scheme"
-                               implementationClass="com.umendes.schemeredux.schemeredux.parser.SchemeParserDefinition"/>
+                               implementationClass="com.umendes.schemeredux.parser.SchemeParserDefinition"/>
         <lang.findUsagesProvider language="Scheme"
-                                 implementationClass="com.umendes.schemeredux.schemeredux.findUsages.SchemeFindUsagesProvider"/>
+                                 implementationClass="com.umendes.schemeredux.findUsages.SchemeFindUsagesProvider"/>
         <lang.braceMatcher language="Scheme"
-                           implementationClass="com.umendes.schemeredux.schemeredux.highlighter.SchemeBraceMatcher"/>
+                           implementationClass="com.umendes.schemeredux.highlighter.SchemeBraceMatcher"/>
         <lang.commenter language="Scheme"
-                        implementationClass="com.umendes.schemeredux.schemeredux.highlighter.SchemeCommenter"/>
+                        implementationClass="com.umendes.schemeredux.highlighter.SchemeCommenter"/>
         <lang.formatter language="Scheme"
-                        implementationClass="com.umendes.schemeredux.schemeredux.formatter.SchemeFormattingModelBuilder"/>
+                        implementationClass="com.umendes.schemeredux.formatter.SchemeFormattingModelBuilder"/>
         <lang.psiStructureViewFactory language="Scheme"
-                                      implementationClass="com.umendes.schemeredux.schemeredux.structure.SchemeStructureViewBuilderFactory"/>
+                                      implementationClass="com.umendes.schemeredux.structure.SchemeStructureViewBuilderFactory"/>
         <lang.foldingBuilder language="Scheme"
-                             implementationClass="com.umendes.schemeredux.schemeredux.fold.SchemeFoldingBuilder"/>
+                             implementationClass="com.umendes.schemeredux.fold.SchemeFoldingBuilder"/>
         <lang.namesValidator language="Scheme"
-                             implementationClass="com.umendes.schemeredux.schemeredux.utils.SchemeNamesValidator"/>
+                             implementationClass="com.umendes.schemeredux.utils.SchemeNamesValidator"/>
 
-        <gotoSymbolContributor implementation="com.umendes.schemeredux.schemeredux.gotoclass.SchemeGoToSymbolContributor"/>
+        <gotoSymbolContributor implementation="com.umendes.schemeredux.gotoclass.SchemeGoToSymbolContributor"/>
         <syntaxHighlighter key="Scheme"
-                           implementationClass="com.umendes.schemeredux.schemeredux.highlighter.SchemeSyntaxHighlighter"/>
-        <annotator language="Scheme" implementationClass="com.umendes.schemeredux.schemeredux.annotator.SchemeAnnotator"/>
+                           implementationClass="com.umendes.schemeredux.highlighter.SchemeSyntaxHighlighter"/>
+        <annotator language="Scheme" implementationClass="com.umendes.schemeredux.annotator.SchemeAnnotator"/>
 
-        <colorSettingsPage implementation="com.umendes.schemeredux.schemeredux.settings.colorScheme.SchemeColorsAndFontsPage"/>
+        <colorSettingsPage implementation="com.umendes.schemeredux.settings.colorScheme.SchemeColorsAndFontsPage"/>
         <codeStyleSettingsProvider
-                implementation="com.umendes.schemeredux.schemeredux.settings.codeStyle.SchemeCodeStyleSettingsProvider"/>
+                implementation="com.umendes.schemeredux.settings.codeStyle.SchemeCodeStyleSettingsProvider"/>
         <langCodeStyleSettingsProvider
-                implementation="com.umendes.schemeredux.schemeredux.settings.codeStyle.SchemeLanguageCodeStyleSettingsProvider"/>
+                implementation="com.umendes.schemeredux.settings.codeStyle.SchemeLanguageCodeStyleSettingsProvider"/>
 
-        <stubElementTypeHolder class="com.umendes.schemeredux.schemeredux.parser.AST"/>
-        <stubIndex implementation="com.umendes.schemeredux.schemeredux.psi.stubs.index.SchemeClassNameIndex"/>
-        <stubIndex implementation="com.umendes.schemeredux.schemeredux.psi.stubs.index.SchemeFullScriptNameIndex"/>
+        <stubElementTypeHolder class="com.umendes.schemeredux.parser.AST"/>
+        <stubIndex implementation="com.umendes.schemeredux.psi.stubs.index.SchemeClassNameIndex"/>
+        <stubIndex implementation="com.umendes.schemeredux.psi.stubs.index.SchemeFullScriptNameIndex"/>
 
-        <projectService serviceInterface="com.umendes.schemeredux.schemeredux.psi.util.SchemePsiElementFactory"
-                        serviceImplementation="com.umendes.schemeredux.schemeredux.psi.util.SchemePsiElementFactoryImpl"/>
+        <projectService serviceInterface="com.umendes.schemeredux.psi.util.SchemePsiElementFactory"
+                        serviceImplementation="com.umendes.schemeredux.psi.util.SchemePsiElementFactoryImpl"/>
     </extensions>
 </idea-plugin>

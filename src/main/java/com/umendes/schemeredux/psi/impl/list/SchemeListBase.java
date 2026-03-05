@@ -1,0 +1,14 @@
+package com.umendes.schemeredux.psi.impl.list;
+
+import com.intellij.lang.ASTNode;
+import org.jetbrains.annotations.NotNull;
+import com.umendes.schemeredux.psi.impl.SchemePsiElementBase;
+
+
+public abstract class SchemeListBase extends SchemePsiElementBase
+{
+  public SchemeListBase(@NotNull ASTNode astNode, String name)
+  {
+    super(astNode, name);
+  }
+}

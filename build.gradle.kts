@@ -4,7 +4,7 @@ plugins {
     id("org.jetbrains.intellij.platform") version "2.11.0"
 }
 
-group = "com.umendes.schemeredux"
+group = "com.umendes"
 version = "1.0-SNAPSHOT"
 
 repositories {
