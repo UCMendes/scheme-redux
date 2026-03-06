@@ -240,7 +240,7 @@ public class SchemeLexer extends LexerBase
 
   Parser<Object> PAR_TOKEN = Parsers.or(PAR_ELEMENT, s_bad_element);
 
-  // Run PAR_TOKEN and then check output using map
+  // Checks if token received is real
   Parser<Token> s_token = PAR_TOKEN
           .map((a) -> {
             if (null != a) {

@@ -17,7 +17,7 @@
 
 (eq? 1 2)
 
-#t #f
+#t #F
 
 '(eq? 1 2)
 `(list ,(eq? 1 2) ,@(eq? 1 2))
@@ -34,7 +34,7 @@
   ((= i 5) vec)
   (vector-set! vec i i))
 
-(let loop ((numbers '(3 -2 1 6 -5))
+(let loop ((numbers '(#b101 -2 1 6 -5))
             (nonneg '())
             (neg '()))
   (cond ((null? numbers) (list nonneg neg))
