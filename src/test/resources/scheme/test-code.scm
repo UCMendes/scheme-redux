@@ -1,9 +1,9 @@
-;; Line Comment
-
+;; Line Comment !$%&*+-./:<=>?@^_~ line comment
 #|
   Multiline
-  Comment
+  | Comment
 |#
+
 
 "String\r\n"
 
