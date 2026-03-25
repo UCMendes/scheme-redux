@@ -56,61 +56,61 @@ class SchemeLexerTest {
         test_fragment = (Tokens.Fragment) testLexer.block_comment.parse("#|thisi|ejeeje|#");
         assertEquals("#||#", test_fragment.text());
     }
-//
-//    @Test
-//    @DisplayName("Whitespace")
-//    void s_whitespace() {
-//        test_fragment = (Tokens.Fragment) testLexer.s_whitespace.parse("   ");
-//        assertEquals("WHITE_SPACE", test_fragment.text());
-//    }
-//
-//    @Test
-//    @DisplayName("Single operator (bracket/quote) character")
-//    void s_op_single_char() {
-//        test_fragment = (Tokens.Fragment) testLexer.s_op_single_char.parse("]");
-//        assertEquals("]", test_fragment.text());
-//    }
-//
-//    @Test
-//    @DisplayName("Open vector character")
-//    // Needs to be changed to comply with R7RS
-//    void s_op_open_vector() {
-//        test_fragment = (Tokens.Fragment) testLexer.s_op_open_vector.parse("#vu8(");
-//        assertEquals("#vu8(", test_fragment.text());
-//    }
-//
-//    @Test
-//    @DisplayName("Abbreviation operators")
-//    void s_op_abbreviations() {
-//        test_fragment = (Tokens.Fragment) testLexer.s_op_abbreviations.parse("#,@");
-//        assertEquals("#,@", test_fragment.text());
-//    }
-//
-//    @Test
-//    @DisplayName("Identifier names")
-//    void s_name_literal() {
-//        String[] TEST_INPUT_VALID = {"B", "BC", "BCD", "BC@Y", "BC\\xD6;E"};
-//        for (String s : TEST_INPUT_VALID) {
+
+    @Test
+    @DisplayName("Whitespace")
+    void s_whitespace() {
+        test_fragment = (Tokens.Fragment) testLexer.s_whitespace.parse("   ");
+        assertEquals("WHITE_SPACE", test_fragment.text());
+    }
+
+    @Test
+    @DisplayName("Single operator (bracket/quote) character")
+    void s_op_single_char() {
+        test_fragment = (Tokens.Fragment) testLexer.s_op_single_char.parse("]");
+        assertEquals("]", test_fragment.text());
+    }
+
+    @Test
+    @DisplayName("Open vector character")
+    // Needs to be changed to comply with R7RS
+    void s_op_open_vector() {
+        test_fragment = (Tokens.Fragment) testLexer.s_op_open_vector.parse("#u8(");
+        assertEquals("#vu8(", test_fragment.text());
+    }
+
+    @Test
+    @DisplayName("Abbreviation operators")
+    void s_op_abbreviations() {
+        test_fragment = (Tokens.Fragment) testLexer.s_op_abbreviations.parse("#,");
+        assertEquals("#,", test_fragment.text());
+    }
+
+    @Test
+    @DisplayName("Identifier names")
+    void s_name_literal() {
+        String[] TEST_INPUT_VALID = {"B", "BC", "BCD", "BC@Y", "BC\\xD6;E"};
+        for (String s : TEST_INPUT_VALID) {
+            test_fragment = (Tokens.Fragment) testLexer.s_name_literal.parse(s);
+            assertEquals(s, test_fragment.text());
+        }
+//        // Pass tests on error, these should not be allowed
+//        String[] TEST_INPUT_INVALID = {"BC\\xL6;E", "6GB"};
+//        for (String s : TEST_INPUT_INVALID) {
 //            test_fragment = (Tokens.Fragment) testLexer.s_name_literal.parse(s);
 //            assertEquals(s, test_fragment.text());
 //        }
-////        Pass tests on error, these should not be allowed
-////        String[] TEST_INPUT_INVALID = {"BC\\xL6;E", "6GB"};
-////        for (String s : TEST_INPUT_INVALID) {
-////            test_fragment = (Tokens.Fragment) testLexer.s_name_literal.parse(s);
-////            assertEquals(s, test_fragment.text());
-////        }
-//    }
-//
-//    @Test
-//    @DisplayName("Numbers")
-//    void s_numbers() {
-//        String[] TEST_INPUT = {"+15", "#b01001", "#O1067", "#d6590", "#Xe83e"};
-//        for (String s : TEST_INPUT) {
-//            test_fragment = (Tokens.Fragment) testLexer.s_numbers.parse(s);
-//            assertEquals("number", test_fragment.text());
-//        }
-//    }
+    }
+
+    @Test
+    @DisplayName("Numbers")
+    void s_numbers() {
+        String[] TEST_INPUT = {"+15", "#b01001", "#O1067", "#d6590", "#Xe83e"};
+        for (String s : TEST_INPUT) {
+            test_fragment = (Tokens.Fragment) testLexer.s_numbers.parse(s);
+            assertEquals("number", test_fragment.text());
+        }
+    }
 //
 //    @Test
 //    @DisplayName("Characters")

@@ -9,13 +9,13 @@ import com.intellij.psi.tree.IElementType;
 // dot parse doesn't have token functionality yet(?) so this stays
 import org.jparsec.Token;
 import org.jparsec.Tokens;
+import org.jparsec.pattern.CharPredicates;
+import org.jparsec.pattern.Pattern;
 import org.jparsec.pattern.Patterns;
-
 
 import java.util.List;
 
-import static com.google.common.labs.parse.Parser.consecutive;
-import static com.google.common.labs.parse.Parser.string;
+import static com.google.common.labs.parse.Parser.*;
 import static com.google.mu.util.CharPredicate.isNot;
 import static java.util.Arrays.asList;
 import static java.util.stream.Collectors.joining;
@@ -52,6 +52,45 @@ public class SchemeLexer extends LexerBase
   }
 
   /**
+   * Helpers
+   */
+
+  // Check for one matching string out of a list
+  // The order here matters, longer words should be placed earlier
+  private static Parser<?> multiword (List<String> terminals) {
+      if (terminals.size() == 2) {
+          return Parser.anyOf(string(terminals.getFirst()), string(terminals.getLast()));
+      } else {
+          return Parser.anyOf(string(terminals.getFirst()), multiword(terminals.subList(1, terminals.size())));
+      }
+  }
+
+  // Look for one character out of a given string
+  // Created just to reduce repeated typing
+  // Will move these all to a separate file later
+  private static Parser<?> oneOf (String chars, String name) {
+    return Parser.single(CharPredicate.anyOf(chars), name);
+  }
+
+  // Next few Parsers are ports from jparsec's Patterns/Parsers classes
+  // A to F or 0 to 9
+  private final CharPredicate HEX = CharPredicate.range('a', 'f').orRange('A', 'F')
+          .orRange('0', '9');
+
+  public static final Parser<?> DEC_INTEGER = oneOf("123456789", "1 to 9").then(
+          digits().zeroOrMore());
+
+  public static final Parser<?> DECIMAL = anyOf(single(CharPredicate.range('0', '9'), "digit")
+          .then(string("."))
+          .then(digits().zeroOrMore()),
+                  string(".")
+                  .then(digits().zeroOrMore()));
+
+  public static final Parser<?> SCIENTIFIC_NOTATION = DECIMAL
+          .then(single(CharPredicate.anyOf("eE"), "plus or minus")
+          .then(single(CharPredicate.anyOf("+-"), "plus or minus").optional()).then(digits()));
+
+  /**
    * Tokens
    */
   // Blanks and Comments
@@ -64,87 +103,84 @@ public class SchemeLexer extends LexerBase
           .map((a) -> (Tokens.fragment(a, Tag.TAG_LINE_COMMENT)));
 
   // The commented must not be '#', or if it's '|', must not be followed by '#'
-  Parser<String> SCA_BLOCK_COMMENT_CONTENT = Parser.anyOf(consecutive(isNot('|'), "|"), string("|").notFollowedBy("#"));
+  Parser<String> SCA_BLOCK_COMMENT_CONTENT = Parser.anyOf(
+          consecutive(isNot('|'), "|"),
+          string("|").notFollowedBy("#"));
   Parser<String> s_block_comment = Parser.define(
           nested -> SCA_BLOCK_COMMENT_CONTENT.or(nested)
                   .zeroOrMore(joining())
                   .between("#|", "|#"));
   Parser<?> block_comment = s_block_comment.thenReturn(Tokens.fragment("#||#", Tag.TAG_LINE_COMMENT));
 
-//  Parser<?> PAR_COMMENT = Parser.anyOf(s_datum_comment_prefix, s_line_comment, block_comment);
+  Parser<?> PAR_COMMENT = Parser.anyOf(s_datum_comment_prefix, s_line_comment, block_comment);
 
-//  Parser<?> s_whitespace = Scanners.WHITESPACES
-//  Parser<?> s_whitespace = Scanners.WHITESPACES
-//          .map((a) -> (Tokens.fragment("WHITE_SPACE", Tag.TAG_WHITE_SPACE)));
+  Parser<?> s_whitespace = consecutive(CharPredicate.is(' '), "WHITE_SPACE")
+          .thenReturn(Tokens.fragment("WHITE_SPACE", Tag.TAG_WHITE_SPACE));
+
+  // Operators
+  Parser<?> s_op_single_char = Parser.single(CharPredicate.anyOf("()[]'`,"), "operator").source()
+          .map((a) -> (Tokens.fragment(a, Tag.TAG_OP_SINGLE_CHAR)));
+
+  // #vu8( does not exist in R7RS, adjusting to suit new specification
+  Parser<?> s_op_open_vector = Parser.anyOf(string("#("), string("#u8("))
+          .source().map((a) -> (Tokens.fragment(a, Tag.TAG_OP_OPEN_VECTOR)));
+  Parser<?> s_op_abbreviations = multiword(asList(",@", "#'", "#`", "#,@", "#,")).source()
+          .map((a) -> (Tokens.fragment(a, Tag.TAG_OP_ABBREVIATIONS)));
+  Parser<?> PAR_OPERATORS = Parser.anyOf(s_op_abbreviations, s_op_open_vector, s_op_single_char);
+
+  // Identifier
+  Parser<?> PT_INLINE_HEX_ESCAPE = Parser.sequence(string("\\x"),
+          consecutive(HEX, "hex character"), Parser.string(";"),
+          (g1, g2, g3) -> g1+g2+g3);
+  Parser<?> PAR_INLINE_HEX_ESCAPE = PT_INLINE_HEX_ESCAPE.source();
+  Parser<?> PT_EXTENDED_ALPHABETIC_CHAR = oneOf("!$%&*+-./:<=>?@^_~","ext alpha");
+  Parser<?> PT_NAME_LITERAL_CHAR_VALID = Parser
+          .anyOf(Parser.single(CharPredicate.WORD, "letter or number"),
+                  PT_EXTENDED_ALPHABETIC_CHAR, PT_INLINE_HEX_ESCAPE);
+  Parser<?> PT_NAME_LITERAL_FIRST_CHAR = Parser
+          .anyOf(Parser.single(CharPredicate.ALPHA, "letter"),
+                  PT_EXTENDED_ALPHABETIC_CHAR, PT_INLINE_HEX_ESCAPE);
+  Parser<?> PT_NAME_LITERAL = PT_NAME_LITERAL_FIRST_CHAR.then(PT_NAME_LITERAL_CHAR_VALID.zeroOrMore());
+  Parser<String> PAR_NAME_LITERAL = PT_NAME_LITERAL.source();
+  Parser<?> s_name_literal = PAR_NAME_LITERAL
+          .map((a) -> (Tokens.fragment(a, Tag.TAG_NAME_LITERAL)));
+
+  // Numbers
+  Parser<?> PT_RIGHT_INTEGER = Parser.sequence(oneOf("+-", "plus-minus sign"), digits(),
+          (g1, g2) -> g1+g2);
+  Parser<String> PAR_RIGHT_INTEGER = PT_RIGHT_INTEGER.source();
+  Parser<?> PAR_BIN_INTEGER = Parser.string("#b").or(Parser.string("#B"))
+          .then(Parser.consecutive(CharPredicate.range('0', '1'), "binary")).source();
+  Parser<?> PAR_OCT_INTEGER = Parser.string("#o").or(Parser.string("#O"))
+          .then(Parser.consecutive(CharPredicate.range('0', '7'), "octonary")).source();
+  Parser<?> PAR_DEC_INTEGER = Parser.string("#d").or(Parser.string("#D")).then(digits()).source();
+  Parser<?> PAR_HEX_INTEGER = Parser.string("#x").or(Parser.string("#X"))
+          .then(Parser.consecutive(HEX, "hex character")).source();
+  Parser<?> s_numbers = Parser.anyOf(
+                  PAR_RIGHT_INTEGER, DEC_INTEGER,
+                  DECIMAL, SCIENTIFIC_NOTATION,
+                  PAR_BIN_INTEGER, PAR_OCT_INTEGER, PAR_DEC_INTEGER, PAR_HEX_INTEGER)
+          .map((a) -> (Tokens.fragment("number", Tag.TAG_NUMBER)));
 //
-//  // Operators
-//  Pattern PT_OP_SINGLE_CHAR = Patterns.among("()[]'`,");
-//  Parser<?> s_op_single_char = PT_OP_SINGLE_CHAR.toScanner("operator").source()
-//          .map((a) -> (Tokens.fragment(a, Tag.TAG_OP_SINGLE_CHAR)));
-//  Parser<?> s_op_open_vector = Parsers.or(Scanners.string("#("), Scanners.string("#vu8("))
-//          .source().map((a) -> (Tokens.fragment(a, Tag.TAG_OP_OPEN_VECTOR)));
-//  List<String> STRS_ABBREVIATION = asList(",@", "#'", "#`", "#,", "#,@");
-//  Terminals TERM_ABBREVIATIONS = Terminals
-//          .operators(STRS_ABBREVIATION);
-//  Parser<?> s_op_abbreviations = TERM_ABBREVIATIONS.tokenizer().source()
-//          .map((a) -> (Tokens.fragment(a, Tag.TAG_OP_ABBREVIATIONS)));
-//  Parser<?> PAR_OPERATORS = Parsers.or(s_op_abbreviations, s_op_open_vector, s_op_single_char);
-//
-//  // Identifier
-//  Pattern PT_INLINE_HEX_ESCAPE = Patterns.sequence(Patterns.string("\\x"),
-//          Patterns.many1(CharPredicates.IS_HEX_DIGIT), Patterns.isChar(';'));
-//  Parser<?> PAR_INLINE_HEX_ESCAPE = PT_INLINE_HEX_ESCAPE.toScanner("inline hex escape").source();
-//  Pattern PT_EXTENDED_ALPHABETIC_CHAR = Patterns.among("!$%&*+-./:<=>?@^_~");
-//  Pattern PT_NAME_LITERAL_CHAR_VALID = Patterns
-//          .or(Patterns.isChar(CharPredicates.IS_LETTER),
-//                  Patterns.isChar(CharPredicates.IS_DIGIT),
-//                  PT_EXTENDED_ALPHABETIC_CHAR, PT_INLINE_HEX_ESCAPE);
-//  Pattern PT_NAME_LITERAL_FIRST_CHAR = Patterns
-//          .or(Patterns.isChar(CharPredicates.IS_LETTER),
-//                  PT_EXTENDED_ALPHABETIC_CHAR, PT_INLINE_HEX_ESCAPE);
-//  Pattern PT_NAME_LITERAL = PT_NAME_LITERAL_FIRST_CHAR.next(PT_NAME_LITERAL_CHAR_VALID.many());
-//  Parser<String> PAR_NAME_LITERAL = PT_NAME_LITERAL.toScanner("name literal").source();
-//  Parser<?> s_name_literal = PAR_NAME_LITERAL
-//          .map((a) -> (Tokens.fragment(a, Tag.TAG_NAME_LITERAL)));
-//
-//  // Numbers
-//  Pattern PT_RIGHT_INTEGER = Patterns.sequence(Patterns.among("+-").optional(), Patterns.INTEGER);
-//  Parser<String> PAR_RIGHT_INTEGER = PT_RIGHT_INTEGER.toScanner("integer").source();
-//  Parser<?> PAR_BIN_INTEGER = Patterns.string("#b").or(Patterns.string("#B"))
-//          .next(Patterns.many1(CharPredicates.range('0', '1'))).toScanner("bin integer").source();
-//  Parser<?> PAR_OCT_INTEGER = Patterns.string("#o").or(Patterns.string("#O"))
-//          .next(Patterns.many1(CharPredicates.range('0', '7'))).toScanner("oct integer").source();
-//  Parser<?> PAR_DEC_INTEGER = Patterns.string("#d").or(Patterns.string("#D"))
-//          .next(Patterns.many1(CharPredicates.range('0', '9'))).toScanner("dec integer").source();
-//  Parser<?> PAR_HEX_INTEGER = Patterns.string("#x").or(Patterns.string("#X"))
-//          .next(Patterns.many1(CharPredicates.IS_HEX_DIGIT)).toScanner("hex integer").source();
-//  Parser<?> s_numbers = Parsers.or(
-//                  PAR_RIGHT_INTEGER, Scanners.DEC_INTEGER,
-//                  Scanners.DECIMAL, Scanners.SCIENTIFIC_NOTATION,
-//                  PAR_BIN_INTEGER, PAR_OCT_INTEGER, PAR_DEC_INTEGER, PAR_HEX_INTEGER)
-//          .map((a) -> (Tokens.fragment("number", Tag.TAG_NUMBER)));
-//
-//  // Characters
-//  List<String> STRS_SPECIAL_CHAR_NAME = asList("nul", "alarm",
-//          "backspace", "tab", "linefeed",
-//          "newline", "vtab", "page", "return", "esc",
-//          "space", "delete", "vtab", "λ",
-//          "rubout", "bel", "vt", "nel", "ls");
-//  Terminals TERM_SPECIAL_CHAR_NAMES = Terminals
-//          .operators(STRS_SPECIAL_CHAR_NAME);
-//  Pattern PT_SINGLE_CHAR = Patterns.ANY_CHAR.next(PT_NAME_LITERAL.not());
-//  Pattern PT_HEX_CHAR = Patterns.sequence(Patterns.among("xX"), Patterns.many1(CharPredicates.IS_HEX_DIGIT))
-//          .next(PT_NAME_LITERAL.not());
-//  Pattern PT_CHAR_PREFIX = Patterns.string("#\\");
-//
-//  Parser<?> SCA_CHAR_PREFIX = PT_CHAR_PREFIX.toScanner("char prefix");
-//  Parser<?> SCA_SPECIAL_CHAR_NAMES = TERM_SPECIAL_CHAR_NAMES.tokenizer().next(PAR_NAME_LITERAL.not());
-//
-//  Parser<?> SCA_SINGLE_CHAR = Patterns.sequence(PT_CHAR_PREFIX, PT_SINGLE_CHAR).toScanner("char");
-//  Parser<?> SCA_HEX_CHAR = Patterns.sequence(PT_CHAR_PREFIX, PT_HEX_CHAR).toScanner("hex char");
-//  Parser<?> SCA_SPECIAL_CHAR = Parsers.sequence(SCA_CHAR_PREFIX, SCA_SPECIAL_CHAR_NAMES).label("special char");
-//  Parser<?> s_sharp_char = Parsers.or(SCA_SPECIAL_CHAR, SCA_HEX_CHAR, SCA_SINGLE_CHAR).source()
-//          .map((a) -> (Tokens.fragment(a, Tag.TAG_SHARP_CHAR)));
+  // Characters
+  List<String> STRS_SPECIAL_CHAR_NAME = asList("nul", "alarm",
+          "backspace", "tab", "linefeed",
+          "newline", "vtab", "page", "return", "esc",
+          "space", "delete", "vtab", "λ",
+          "rubout", "bel", "vt", "nel", "ls");
+  Parser<?> PT_SINGLE_CHAR = single(CharPredicate.ANY, "any");
+  Pattern PT_HEX_CHAR = Patterns.sequence(Patterns.among("xX"), Patterns.many1(CharPredicates.IS_HEX_DIGIT))
+          .next(PT_NAME_LITERAL.not());
+  Pattern PT_CHAR_PREFIX = Patterns.string("#\\");
+
+  Parser<?> SCA_CHAR_PREFIX = PT_CHAR_PREFIX.toScanner("char prefix");
+  Parser<?> SCA_SPECIAL_CHAR_NAMES = multiword(STRS_SPECIAL_CHAR_NAME).next(PAR_NAME_LITERAL.not());
+
+  Parser<?> SCA_SINGLE_CHAR = PT_CHAR_PREFIX.then(PT_SINGLE_CHAR);
+  Parser<?> SCA_HEX_CHAR = PT_CHAR_PREFIX.then(PT_HEX_CHAR);
+  Parser<?> SCA_SPECIAL_CHAR = SCA_CHAR_PREFIX.then(SCA_SPECIAL_CHAR_NAMES);
+  Parser<?> s_sharp_char = Parser.anyOf(SCA_SPECIAL_CHAR, SCA_HEX_CHAR, SCA_SINGLE_CHAR).source()
+          .map((a) -> (Tokens.fragment(a, Tag.TAG_SHARP_CHAR)));
 //
 //  // String
 //  Parser<?> PAR_STRING = Scanners.DOUBLE_QUOTE_STRING

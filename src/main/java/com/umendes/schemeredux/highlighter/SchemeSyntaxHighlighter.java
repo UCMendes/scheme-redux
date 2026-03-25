@@ -29,8 +29,7 @@ public class SchemeSyntaxHighlighter extends SyntaxHighlighterBase implements Sc
     return new SchemeLexer();
   }
 
-  @NotNull
-  public TextAttributesKey[] getTokenHighlights(IElementType tokenType)
+  public TextAttributesKey @NotNull [] getTokenHighlights(IElementType tokenType)
   {
     TextAttributesKey[] Keys = ATTRIBUTES.get(tokenType);
     if (null == Keys) {
