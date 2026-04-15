@@ -76,7 +76,7 @@ class SchemeLexerTest {
     // Needs to be changed to comply with R7RS
     void s_op_open_vector() {
         test_fragment = (Tokens.Fragment) testLexer.s_op_open_vector.parse("#u8(");
-        assertEquals("#vu8(", test_fragment.text());
+        assertEquals("#u8(", test_fragment.text());
     }
 
     @Test
@@ -111,69 +111,82 @@ class SchemeLexerTest {
             assertEquals("number", test_fragment.text());
         }
     }
-//
-//    @Test
-//    @DisplayName("Characters")
-//    // Also test for invalid case: char followed by char
-//    void s_sharp_char() {
-//        String[] TEST_INPUT = {"#\\@", "#\\F", "#\\delete"};
-//        for (String s : TEST_INPUT) {
-//            test_fragment = (Tokens.Fragment) testLexer.s_sharp_char.parse(s);
-//            assertEquals(s, test_fragment.text());
-//        }
-//    }
-//
-//    @Test
-//    @DisplayName("Strings")
-//    void PAR_STRING() {
-//        test_fragment = (Tokens.Fragment) testLexer.PAR_STRING.parse("\"It's text\"");
-//        assertEquals("\"It's text\"", test_fragment.text());
-//    }
-//
-//    @Test
-//    @DisplayName("Booleans")
-//    // terminals being entered straight rather than being converted to list may be the
-//    // reason for me needing escapes here. Will rectify during dot-parse implementation
-//    void s_boolean() {
-//        test_fragment = (Tokens.Fragment) testLexer.PAR_STRING.parse("\"#T\"");
-//        assertEquals("\"#T\"", test_fragment.text());
-//    }
-//
-//    @Test
-//    @DisplayName("Sharp Exclamation")
-//    // Cannot find any mention of this in the R7RS report, but will implement anyway
-//    void s_sharp_exclamation() {
-//        String[] TEST_INPUT = {"#!B", "#!BC", "#!BCD", "#!BC@Y", "#!BC\\xD6;E"};
-//        for (String s : TEST_INPUT) {
-//            test_fragment = (Tokens.Fragment) testLexer.s_sharp_exclamation.parse(s);
-//            assertEquals(s, test_fragment.text());
-//        }
-//    }
-//
-//    @Test
-//    @DisplayName("Built-in Elements")
-//    // Tests both s_keywords and s_builtin_procedures
-//    // Need to adjust list based on R7RS updated lists
-//    void PAR_BUILTIN_ELEMENTS() {
-//        String[] TEST_INPUT = {"quasisyntax", "div-and-mod"};
-//        for (String s : TEST_INPUT) {
-//            test_fragment = (Tokens.Fragment) testLexer.PAR_BUILTIN_ELEMENTS.parse(s);
-//            assertEquals(s, test_fragment.text());
-//        }
-//    }
-//
-//    @Test
-//    @DisplayName("Built-in Elements")
-//    void PAR_TOKEN() {
-//        String[] TEST_INPUT = {"quasisynquax", "|"};
-//        for (String s : TEST_INPUT) {
-//            test_fragment = (Tokens.Fragment) testLexer.PAR_TOKEN.parse(s);
-//            // Out of interest
-//            System.out.println("type: " + test_fragment.tag().toString());
-//            assertEquals(s, test_fragment.text());
-//        }
-//    }
+
+    @Test
+    @DisplayName("Characters")
+    // Also test for invalid case: char followed by char
+    // Testing every keyword just in case
+    void s_sharp_char() {
+        String[] TEST_INPUT = {"#\\nul", "#\\alarm",
+                "#\\backspace", "#\\tab", "#\\linefeed",
+                "#\\newline", "#\\vtab", "#\\page", "#\\return", "#\\esc",
+                "#\\space", "#\\delete", "#\\vtab", "#\\λ",
+                "#\\rubout", "#\\bel", "#\\vt", "#\\nel", "#\\ls"};
+        for (String s : TEST_INPUT) {
+            test_fragment = (Tokens.Fragment) testLexer.s_sharp_char.parse(s);
+            assertEquals(s, test_fragment.text());
+        }
+    }
+
+    @Test
+    @DisplayName("Strings")
+    void PAR_STRING() {
+        test_fragment = (Tokens.Fragment) testLexer.PAR_STRING.parse("\"It's text\"");
+        assertEquals("\"It's text\"", test_fragment.text());
+    }
+
+    @Test
+    @DisplayName("Booleans")
+    // terminals being entered straight rather than being converted to list may be the
+    // reason for me needing escapes here. Will rectify during dot-parse implementation
+    // Update: It's not that, look back and check what hashtags are in a string literal
+    void s_boolean() {
+        test_fragment = (Tokens.Fragment) testLexer.PAR_STRING.parse("\"#T\"");
+        assertEquals("\"#T\"", test_fragment.text());
+    }
+
+    @Test
+    @DisplayName("Sharp Exclamation")
+    // Cannot find any mention of this in the R7RS report, but will implement anyway
+    void s_sharp_exclamation() {
+        String[] TEST_INPUT = {"#!B", "#!BC", "#!BCD", "#!BC@Y", "#!BC\\xD6;E"};
+        for (String s : TEST_INPUT) {
+            test_fragment = (Tokens.Fragment) testLexer.s_sharp_exclamation.parse(s);
+            assertEquals(s, test_fragment.text());
+        }
+    }
+
+    @Test
+    @DisplayName("Built-in Elements")
+    // Tests both s_keywords and s_builtin_procedures
+    // Need to adjust list based on R7RS updated lists
+    // Need to be super careful with ordering here
+    void PAR_BUILTIN_ELEMENTS() {
+        String[] TEST_INPUT = {"quasisyntax", "div-and-mod"};
+        for (String s : TEST_INPUT) {
+            test_fragment = (Tokens.Fragment) testLexer.PAR_BUILTIN_ELEMENTS.parse(s);
+            assertEquals(s, test_fragment.text());
+        }
+    }
+
+    @Test
+    @DisplayName("Bad character parsing")
+    void PAR_TOKEN() {
+        String[] TEST_INPUT = {"quasisynquax", "|"};
+        for (String s : TEST_INPUT) {
+            test_fragment = (Tokens.Fragment) testLexer.PAR_TOKEN.parse(s);
+            // Out of interest
+            System.out.println("type: " + test_fragment.tag().toString());
+            assertEquals(s, test_fragment.text());
+        }
+    }
 
     // Will also create tests for full scm files
 
+    @Test
+    @DisplayName("What is in A")
+    void s_token() {
+        Object test_huh = testLexer.s_token.parse("        ");
+        assertEquals("      ", test_huh);
+    }
 }

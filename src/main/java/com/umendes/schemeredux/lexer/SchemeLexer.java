@@ -9,9 +9,6 @@ import com.intellij.psi.tree.IElementType;
 // dot parse doesn't have token functionality yet(?) so this stays
 import org.jparsec.Token;
 import org.jparsec.Tokens;
-import org.jparsec.pattern.CharPredicates;
-import org.jparsec.pattern.Pattern;
-import org.jparsec.pattern.Patterns;
 
 import java.util.List;
 
@@ -67,7 +64,6 @@ public class SchemeLexer extends LexerBase
 
   // Look for one character out of a given string
   // Created just to reduce repeated typing
-  // Will move these all to a separate file later
   private static Parser<?> oneOf (String chars, String name) {
     return Parser.single(CharPredicate.anyOf(chars), name);
   }
@@ -77,16 +73,16 @@ public class SchemeLexer extends LexerBase
   private final CharPredicate HEX = CharPredicate.range('a', 'f').orRange('A', 'F')
           .orRange('0', '9');
 
-  public static final Parser<?> DEC_INTEGER = oneOf("123456789", "1 to 9").then(
+  private static final Parser<?> DEC_INTEGER = oneOf("123456789", "1 to 9").then(
           digits().zeroOrMore());
 
-  public static final Parser<?> DECIMAL = anyOf(single(CharPredicate.range('0', '9'), "digit")
+  private static final Parser<?> DECIMAL = anyOf(single(CharPredicate.range('0', '9'), "digit")
           .then(string("."))
           .then(digits().zeroOrMore()),
                   string(".")
                   .then(digits().zeroOrMore()));
 
-  public static final Parser<?> SCIENTIFIC_NOTATION = DECIMAL
+  private static final Parser<?> SCIENTIFIC_NOTATION = DECIMAL
           .then(single(CharPredicate.anyOf("eE"), "plus or minus")
           .then(single(CharPredicate.anyOf("+-"), "plus or minus").optional()).then(digits()));
 
@@ -110,12 +106,12 @@ public class SchemeLexer extends LexerBase
           nested -> SCA_BLOCK_COMMENT_CONTENT.or(nested)
                   .zeroOrMore(joining())
                   .between("#|", "|#"));
-  Parser<?> block_comment = s_block_comment.thenReturn(Tokens.fragment("#||#", Tag.TAG_LINE_COMMENT));
+  Parser<?> block_comment = s_block_comment.map((a) -> (Tokens.fragment("#||#", Tag.TAG_BLOCK_COMMENT)));
 
   Parser<?> PAR_COMMENT = Parser.anyOf(s_datum_comment_prefix, s_line_comment, block_comment);
 
   Parser<?> s_whitespace = consecutive(CharPredicate.is(' '), "WHITE_SPACE")
-          .thenReturn(Tokens.fragment("WHITE_SPACE", Tag.TAG_WHITE_SPACE));
+          .map((a) -> (Tokens.fragment(a, Tag.TAG_WHITE_SPACE)));
 
   // Operators
   Parser<?> s_op_single_char = Parser.single(CharPredicate.anyOf("()[]'`,"), "operator").source()
@@ -169,131 +165,123 @@ public class SchemeLexer extends LexerBase
           "space", "delete", "vtab", "λ",
           "rubout", "bel", "vt", "nel", "ls");
   Parser<?> PT_SINGLE_CHAR = single(CharPredicate.ANY, "any");
-  Pattern PT_HEX_CHAR = Patterns.sequence(Patterns.among("xX"), Patterns.many1(CharPredicates.IS_HEX_DIGIT))
-          .next(PT_NAME_LITERAL.not());
-  Pattern PT_CHAR_PREFIX = Patterns.string("#\\");
+  Parser<?> PT_HEX_CHAR = oneOf("xX", "hex marker").then(consecutive(HEX, "hex digit"))
+          .notFollowedBy(PT_NAME_LITERAL, "variable name");
+  Parser<?> PT_CHAR_PREFIX = string("#\\");
 
-  Parser<?> SCA_CHAR_PREFIX = PT_CHAR_PREFIX.toScanner("char prefix");
-  Parser<?> SCA_SPECIAL_CHAR_NAMES = multiword(STRS_SPECIAL_CHAR_NAME).next(PAR_NAME_LITERAL.not());
+  Parser<?> SCA_SPECIAL_CHAR_NAMES = multiword(STRS_SPECIAL_CHAR_NAME)
+          .notFollowedBy(PT_NAME_LITERAL, "variable name");
 
   Parser<?> SCA_SINGLE_CHAR = PT_CHAR_PREFIX.then(PT_SINGLE_CHAR);
   Parser<?> SCA_HEX_CHAR = PT_CHAR_PREFIX.then(PT_HEX_CHAR);
-  Parser<?> SCA_SPECIAL_CHAR = SCA_CHAR_PREFIX.then(SCA_SPECIAL_CHAR_NAMES);
+  Parser<?> SCA_SPECIAL_CHAR = PT_CHAR_PREFIX.then(SCA_SPECIAL_CHAR_NAMES);
   Parser<?> s_sharp_char = Parser.anyOf(SCA_SPECIAL_CHAR, SCA_HEX_CHAR, SCA_SINGLE_CHAR).source()
           .map((a) -> (Tokens.fragment(a, Tag.TAG_SHARP_CHAR)));
-//
-//  // String
-//  Parser<?> PAR_STRING = Scanners.DOUBLE_QUOTE_STRING
-//          .map((a) -> (Tokens.fragment(a, Tag.TAG_QUOTE_STRING)));
-//
-//  // Boolean
-//  Terminals TERM_BOOLEAN = Terminals
-//          .operators("#t", "#f", "#T", "#F");
-//  Parser<?> s_boolean = TERM_BOOLEAN.tokenizer().source()
-//          .map((a) -> (Tokens.fragment(a, Tag.TAG_BOOLEAN)));
-//
-//  // Sharp exclamation (#!eof, #!null, etc.)
-//  Pattern PT_SHARP_EXCLAMATION = Patterns.sequence(Patterns.string("#!"), PT_NAME_LITERAL);
-//  Parser<?> s_sharp_exclamation = PT_SHARP_EXCLAMATION.toScanner("sharp exclamation").source()
-//          .map((a) -> (Tokens.fragment(a, Tag.TAG_SHARP_EXCLAMATION)));
-//
-//  // Values entered by the user
-//  Parser<?> PAR_LITERALS = Parsers.or(PAR_STRING, s_numbers, s_boolean, s_sharp_exclamation, s_sharp_char);
-//
-//  /**
-//   * Some built-in elements
-//   */
-//  // Keyword
-//  List<String> STRS_KEYWORD = asList(
-//          "and", "begin", "case", "cond", "define",
-//          "delay", "do", "else", "if", "lambda", "let",
-//          "let*", "letrec", "or", "quote", "quasiquote",
-//          "quasisyntax", "set!", "syntax", "unquote", "unquote-splicing",
-//          "unsyntax", "unsyntax-splicing");
-//  Terminals TERM_KEYWORDS = Terminals
-//        .operators(STRS_KEYWORD);
-//  Parser<?> s_keywords = TERM_KEYWORDS.tokenizer().next(PAR_NAME_LITERAL.not()).source()
-//        .map((a) -> (Tokens.fragment(a, Tag.TAG_KEYWORD)));
-//
-//  // Built-in Procedures
-//  List<String> STRS_BUILTIN_PROCEDURE = asList("*", "+", "-", "/",
-//          "<", "<=", "=", "=>", ">", ">=",
-//          "abs", "acos", "angle", "append",
-//          "apply", "asin", "assert", "assertion-violation", "atan",
-//          "begin0", "boolean=?", "boolean?", "caar",
-//          "cadr", "call-with-current-continuation", "call-with-values", "call/cc", "car",
-//          "cdddar", "cddddr", "cdr", "ceiling",
-//          "char->integer", "char<=?", "char<?", "char=?", "char>=?",
-//          "char>?", "char?", "complex?", "condition?",
-//          "cons", "consi", "cos", "define-syntax",
-//          "denominator", "div", "div-and-mod", "div0", "div0-and-mod0",
-//          "dot", "dw", "dynamic-wind", "eq?",
-//          "equal?", "eqv?", "error", "even?", "exact",
-//          "exact-integer-sqrt", "exact?", "exp", "export", "expt",
-//          "finite?", "floor", "for-each", "gcd", "identifier-syntax",
-//          "imag-part", "import", "inexact", "inexact?",
-//          "infinite?", "integer->char", "integer-valued?", "integer?",
-//          "lcm", "length", "let*-values",
-//          "let-syntax", "let-values", "letrec*", "letrec-syntax",
-//          "library", "list", "list->string", "list->vector", "list-ref",
-//          "list-tail", "list?", "log", "magnitude", "make-polar",
-//          "make-rectangular", "make-string", "make-vector", "map", "max",
-//          "min", "mod", "mod0", "nan?", "negative?",
-//          "not", "null", "null?", "number->string", "number?",
-//          "numerator", "odd?", "pair?", "positive?",
-//          "procedure?", "quote", "raise", "raise-continuable",
-//          "rational-valued?", "rational?", "rationalize", "real-part", "real-valued?",
-//          "real?", "reverse", "round", "set-car!",
-//          "set-cdr!", "sin", "sqrt", "string", "string->list",
-//          "string->number", "string->symbol", "string-append", "string-copy", "string-for-each",
-//          "string-length", "string-ref", "string<=?", "string<?", "string=?",
-//          "string>=?", "string>?", "string?", "substring", "symbol->string",
-//          "symbol=?", "symbol?", "syntax-rules", "tan", "throw",
-//          "truncate", "values", "vector",
-//          "vector->list", "vector-fill!", "vector-for-each", "vector-length", "vector-map",
-//          "vector-ref", "vector-set!", "vector?", "with-exception-handler", "zero?");
-//  Terminals TERM_BUILTIN_PROCEDURES = Terminals
-//          .operators(STRS_BUILTIN_PROCEDURE);
-//  Parser<?> s_builtin_procedures = TERM_BUILTIN_PROCEDURES.tokenizer().next(PAR_NAME_LITERAL.not()).source()
-//          .map((a) -> (Tokens.fragment(a, Tag.TAG_PROCEDURE)));
-//
-//  Parser<?> PAR_BUILTIN_ELEMENTS = Parsers.or(s_keywords, s_builtin_procedures);
-//
-//  // Bad elements
-//  Parser<?> PAR_ELEMENT = Parsers.or(s_whitespace, PAR_COMMENT,
-//          PAR_LITERALS, PAR_BUILTIN_ELEMENTS, s_name_literal, PAR_OPERATORS);
-//  Parser<String> PAR_ANY_CHAR = Scanners.ANY_CHAR.source();
-//  Parser<?> s_bad_element = PAR_ANY_CHAR
-//          .map((a) -> (Tokens.fragment(a, Tag.TAG_BAD_CHARACTER)));
-//
-//  Parser<Object> PAR_TOKEN = Parsers.or(PAR_ELEMENT, s_bad_element);
-//
-//  // Checks if token received is real
-//  Parser<Token> s_token = PAR_TOKEN
-//          .map((a) -> {
-//            if (null != a) {
-////              System.out.println("a: " + a);
-//              if (a.getClass() == Tokens.Fragment.class) {
-//                token_frag = (Tokens.Fragment)a;
-//                System.out.println("type: " + ((Tokens.Fragment)a).tag().toString());
-//                System.out.println("text: " + ((Tokens.Fragment)a).text());
-//              } else {
-//                token_frag = null;
-////                System.out.println("type: " + a.getClass().getName());
-//              }
-//            } else {
-//              token_frag = null;
-////              System.out.println("a: null");
-//            }
-//            return a;
-//          }).token()
-//          .map((a) -> {
-//              // How far forward to jump lexer once parsing is done
-//            token_length = a.length();
-////            System.out.println("index: " + a.index() + ", length: " + a.length());
-//            return a;
-//            // If anything in this Parser fails, no match is given?
-//          }).atomic();
+
+  // String
+  Parser<?> PAR_STRING = quotedByWithEscapes('"', '"', chars(1)).source()
+          .map((a) -> (Tokens.fragment(a, Tag.TAG_QUOTE_STRING)));
+
+  // Boolean
+  List<String> TERM_BOOLEAN = asList("#t", "#f", "#T", "#F");
+  Parser<?> s_boolean = multiword(TERM_BOOLEAN).source()
+          .map((a) -> (Tokens.fragment(a, Tag.TAG_BOOLEAN)));
+
+  // Sharp exclamation (#!eof, #!null, etc.)
+  Parser<?> PT_SHARP_EXCLAMATION = string("#!").then(PT_NAME_LITERAL);
+  Parser<?> s_sharp_exclamation = PT_SHARP_EXCLAMATION.source()
+          .map((a) -> (Tokens.fragment(a, Tag.TAG_SHARP_EXCLAMATION)));
+
+  // Values entered by the user
+  Parser<?> PAR_LITERALS = Parser.anyOf(PAR_STRING, s_numbers, s_boolean, s_sharp_exclamation, s_sharp_char);
+
+  /**
+   * Built-in elements
+   */
+  // Keyword
+  List<String> STRS_KEYWORD = asList(
+          "and", "begin", "case", "cond", "define",
+          "delay", "do", "else", "if", "lambda", "let",
+          "let*", "letrec", "or", "quote", "quasiquote",
+          "quasisyntax", "set!", "syntax", "unquote", "unquote-splicing",
+          "unsyntax", "unsyntax-splicing");
+  Parser<?> s_keywords = multiword(STRS_KEYWORD).notFollowedBy(PAR_NAME_LITERAL, "variable name").source()
+        .map((a) -> (Tokens.fragment(a, Tag.TAG_KEYWORD)));
+
+  // Built-in Procedures
+  List<String> STRS_BUILTIN_PROCEDURE = asList("*", "+", "-", "/",
+          "<", "<=", "=", "=>", ">", ">=",
+          "abs", "acos", "angle", "append",
+          "apply", "asin", "assert", "assertion-violation", "atan",
+          "begin0", "boolean=?", "boolean?", "caar",
+          "cadr", "call-with-current-continuation", "call-with-values", "call/cc", "car",
+          "cdddar", "cddddr", "cdr", "ceiling",
+          "char->integer", "char<=?", "char<?", "char=?", "char>=?",
+          "char>?", "char?", "complex?", "condition?",
+          "cons", "consi", "cos", "define-syntax",
+          "denominator", "div-and-mod", "div0-and-mod0", "div0", "div",
+          "dot", "dw", "dynamic-wind", "eq?",
+          "equal?", "eqv?", "error", "even?", "exact",
+          "exact-integer-sqrt", "exact?", "exp", "export", "expt",
+          "finite?", "floor", "for-each", "gcd", "identifier-syntax",
+          "imag-part", "import", "inexact", "inexact?",
+          "infinite?", "integer->char", "integer-valued?", "integer?",
+          "lcm", "length", "let*-values",
+          "let-syntax", "let-values", "letrec*", "letrec-syntax",
+          "library", "list", "list->string", "list->vector", "list-ref",
+          "list-tail", "list?", "log", "magnitude", "make-polar",
+          "make-rectangular", "make-string", "make-vector", "map", "max",
+          "min", "mod", "mod0", "nan?", "negative?",
+          "not", "null", "null?", "number->string", "number?",
+          "numerator", "odd?", "pair?", "positive?",
+          "procedure?", "quote", "raise", "raise-continuable",
+          "rational-valued?", "rational?", "rationalize", "real-part", "real-valued?",
+          "real?", "reverse", "round", "set-car!",
+          "set-cdr!", "sin", "sqrt", "string", "string->list",
+          "string->number", "string->symbol", "string-append", "string-copy", "string-for-each",
+          "string-length", "string-ref", "string<=?", "string<?", "string=?",
+          "string>=?", "string>?", "string?", "substring", "symbol->string",
+          "symbol=?", "symbol?", "syntax-rules", "tan", "throw",
+          "truncate", "values", "vector",
+          "vector->list", "vector-fill!", "vector-for-each", "vector-length", "vector-map",
+          "vector-ref", "vector-set!", "vector?", "with-exception-handler", "zero?");
+  Parser<?> s_builtin_procedures = multiword(STRS_BUILTIN_PROCEDURE)
+          .notFollowedBy(PAR_NAME_LITERAL, "variable name").source()
+          .map((a) -> (Tokens.fragment(a, Tag.TAG_PROCEDURE)));
+
+  Parser<?> PAR_BUILTIN_ELEMENTS = Parser.anyOf(s_keywords, s_builtin_procedures);
+
+  // Bad elements
+  Parser<?> PAR_ELEMENT = Parser.anyOf(s_whitespace, PAR_COMMENT,
+          PAR_LITERALS, PAR_BUILTIN_ELEMENTS, s_name_literal, PAR_OPERATORS);
+  Parser<String> PAR_ANY_CHAR = single(CharPredicate.ANY, "any").source();
+  Parser<?> s_bad_element = PAR_ANY_CHAR
+          .map((a) -> (Tokens.fragment(a, Tag.TAG_BAD_CHARACTER)));
+
+  Parser<Object> PAR_TOKEN = Parser.anyOf(PAR_ELEMENT, s_bad_element);
+
+  // Run PAR_TOKEN and then check output using map
+Parser<Object> s_token = PAR_TOKEN
+          .map((a) -> {
+            if (null != a) {
+//              System.out.println("a: " + a);
+              if (a.getClass() == Tokens.Fragment.class) {
+                // If this is a valid token, get its type and text, else do the other stuff
+                // Also, set global variable token-frag to token fragment a, for later sorting
+                token_frag = (Tokens.Fragment)a;
+                System.out.println("type: " + ((Tokens.Fragment)a).tag().toString());
+                System.out.println("text: " + ((Tokens.Fragment)a).text());
+                token_length = ((Tokens.Fragment)a).text().length();
+              } else {
+                token_frag = null;
+//                System.out.println("type: " + a.getClass().getName());
+              }
+            } else {
+              token_frag = null;
+//              System.out.println("a: null");
+            }
+            return a;
+          });
 
   @Override
   // The values that go in these are probably determined by intellij?
@@ -340,7 +328,7 @@ public class SchemeLexer extends LexerBase
     CharSequence myBuffer = buffer.subSequence(this.lex_start_pos, this.bufferEnd);
 
     try {
-     // s_token.parse(myBuffer);
+      s_token.parse(myBuffer.toString());
 
     } catch (Exception e) {
 //      System.out.println("advance Exception: " + e.getMessage());
