@@ -1,19 +1,21 @@
 package com.umendes.schemeredux.lexer;
 
-import com.google.common.labs.parse.CharacterSet;
+
 import com.google.common.labs.parse.Parser;
 import com.google.mu.util.CharPredicate;
 import com.intellij.lexer.LexerBase;
 import com.intellij.psi.tree.IElementType;
 
 // dot parse doesn't have token functionality yet(?) so this stays
-import org.jparsec.Token;
 import org.jparsec.Tokens;
 
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.List;
 
 import static com.google.common.labs.parse.Parser.*;
 import static com.google.mu.util.CharPredicate.isNot;
+import static com.umendes.schemeredux.lexer.SchemeLexerHelper.*;
 import static java.util.Arrays.asList;
 import static java.util.stream.Collectors.joining;
 
@@ -49,44 +51,6 @@ public class SchemeLexer extends LexerBase
   }
 
   /**
-   * Helpers
-   */
-
-  // Check for one matching string out of a list
-  // The order here matters, longer words should be placed earlier
-  private static Parser<?> multiword (List<String> terminals) {
-      if (terminals.size() == 2) {
-          return Parser.anyOf(string(terminals.getFirst()), string(terminals.getLast()));
-      } else {
-          return Parser.anyOf(string(terminals.getFirst()), multiword(terminals.subList(1, terminals.size())));
-      }
-  }
-
-  // Look for one character out of a given string
-  // Created just to reduce repeated typing
-  private static Parser<?> oneOf (String chars, String name) {
-    return Parser.single(CharPredicate.anyOf(chars), name);
-  }
-
-  // Next few Parsers are ports from jparsec's Patterns/Parsers classes
-  // A to F or 0 to 9
-  private final CharPredicate HEX = CharPredicate.range('a', 'f').orRange('A', 'F')
-          .orRange('0', '9');
-
-  private static final Parser<?> DEC_INTEGER = oneOf("123456789", "1 to 9").then(
-          digits().zeroOrMore());
-
-  private static final Parser<?> DECIMAL = anyOf(single(CharPredicate.range('0', '9'), "digit")
-          .then(string("."))
-          .then(digits().zeroOrMore()),
-                  string(".")
-                  .then(digits().zeroOrMore()));
-
-  private static final Parser<?> SCIENTIFIC_NOTATION = DECIMAL
-          .then(single(CharPredicate.anyOf("eE"), "plus or minus")
-          .then(single(CharPredicate.anyOf("+-"), "plus or minus").optional()).then(digits()));
-
-  /**
    * Tokens
    */
   // Blanks and Comments
@@ -106,11 +70,11 @@ public class SchemeLexer extends LexerBase
           nested -> SCA_BLOCK_COMMENT_CONTENT.or(nested)
                   .zeroOrMore(joining())
                   .between("#|", "|#"));
-  Parser<?> block_comment = s_block_comment.map((a) -> (Tokens.fragment("#||#", Tag.TAG_BLOCK_COMMENT)));
+  Parser<?> block_comment = s_block_comment.source().map((a) -> (Tokens.fragment(a, Tag.TAG_BLOCK_COMMENT)));
 
   Parser<?> PAR_COMMENT = Parser.anyOf(s_datum_comment_prefix, s_line_comment, block_comment);
 
-  Parser<?> s_whitespace = consecutive(CharPredicate.is(' '), "WHITE_SPACE")
+  Parser<?> s_whitespace = consecutive(CharPredicate.anyOf(" \n"), "WHITE_SPACE")
           .map((a) -> (Tokens.fragment(a, Tag.TAG_WHITE_SPACE)));
 
   // Operators
@@ -155,8 +119,8 @@ public class SchemeLexer extends LexerBase
   Parser<?> s_numbers = Parser.anyOf(
                   PAR_RIGHT_INTEGER, DEC_INTEGER,
                   DECIMAL, SCIENTIFIC_NOTATION,
-                  PAR_BIN_INTEGER, PAR_OCT_INTEGER, PAR_DEC_INTEGER, PAR_HEX_INTEGER)
-          .map((a) -> (Tokens.fragment("number", Tag.TAG_NUMBER)));
+                  PAR_BIN_INTEGER, PAR_OCT_INTEGER, PAR_DEC_INTEGER, PAR_HEX_INTEGER).source()
+          .map((a) -> (Tokens.fragment(a, Tag.TAG_NUMBER)));
 //
   // Characters
   List<String> STRS_SPECIAL_CHAR_NAME = asList("nul", "alarm",
@@ -209,7 +173,7 @@ public class SchemeLexer extends LexerBase
         .map((a) -> (Tokens.fragment(a, Tag.TAG_KEYWORD)));
 
   // Built-in Procedures
-  List<String> STRS_BUILTIN_PROCEDURE = asList("*", "+", "-", "/",
+  String[] STRS_BUILTIN_PROCEDURE = {"*", "+", "-", "/",
           "<", "<=", "=", "=>", ">", ">=",
           "abs", "acos", "angle", "append",
           "apply", "asin", "assert", "assertion-violation", "atan",
@@ -244,9 +208,9 @@ public class SchemeLexer extends LexerBase
           "symbol=?", "symbol?", "syntax-rules", "tan", "throw",
           "truncate", "values", "vector",
           "vector->list", "vector-fill!", "vector-for-each", "vector-length", "vector-map",
-          "vector-ref", "vector-set!", "vector?", "with-exception-handler", "zero?");
-  Parser<?> s_builtin_procedures = multiword(STRS_BUILTIN_PROCEDURE)
-          .notFollowedBy(PAR_NAME_LITERAL, "variable name").source()
+          "vector-ref", "vector-set!", "vector?", "with-exception-handler", "zero?"};
+  Parser<?> s_builtin_procedures = multiword(List.of(terminalSort(STRS_BUILTIN_PROCEDURE))).source()
+          .notFollowedBy(PAR_NAME_LITERAL, "variable name")
           .map((a) -> (Tokens.fragment(a, Tag.TAG_PROCEDURE)));
 
   Parser<?> PAR_BUILTIN_ELEMENTS = Parser.anyOf(s_keywords, s_builtin_procedures);
@@ -269,9 +233,20 @@ Parser<Object> s_token = PAR_TOKEN
                 // If this is a valid token, get its type and text, else do the other stuff
                 // Also, set global variable token-frag to token fragment a, for later sorting
                 token_frag = (Tokens.Fragment)a;
-                System.out.println("type: " + ((Tokens.Fragment)a).tag().toString());
-                System.out.println("text: " + ((Tokens.Fragment)a).text());
                 token_length = ((Tokens.Fragment)a).text().length();
+
+//                // For testing
+//                System.out.println("type: " + ((Tokens.Fragment)a).tag().toString());
+//                System.out.println("text: " + ((Tokens.Fragment)a).text());
+//
+//                try (FileWriter writer = new FileWriter("absolute file path to LexerTestDotParse.txt here", true)) {
+//                  writer.write("type: " + ((Tokens.Fragment)a).tag() + "\n");
+//                  writer.write("text: " + ((Tokens.Fragment)a).text() + "\n" + "\n");
+//
+//                } catch (IOException e) {
+//                    throw new RuntimeException(e);
+//                }
+
               } else {
                 token_frag = null;
 //                System.out.println("type: " + a.getClass().getName());

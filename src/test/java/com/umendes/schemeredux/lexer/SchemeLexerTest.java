@@ -54,7 +54,7 @@ class SchemeLexerTest {
     @DisplayName("Block comment content")
     void s_block_comment_content() {
         test_fragment = (Tokens.Fragment) testLexer.block_comment.parse("#|thisi|ejeeje|#");
-        assertEquals("#||#", test_fragment.text());
+        assertEquals("thisi|ejeeje", test_fragment.text());
     }
 
     @Test
@@ -160,9 +160,8 @@ class SchemeLexerTest {
     @DisplayName("Built-in Elements")
     // Tests both s_keywords and s_builtin_procedures
     // Need to adjust list based on R7RS updated lists
-    // Need to be super careful with ordering here
     void PAR_BUILTIN_ELEMENTS() {
-        String[] TEST_INPUT = {"quasisyntax", "div-and-mod"};
+        String[] TEST_INPUT = {"null", "null?"};
         for (String s : TEST_INPUT) {
             test_fragment = (Tokens.Fragment) testLexer.PAR_BUILTIN_ELEMENTS.parse(s);
             assertEquals(s, test_fragment.text());
@@ -181,8 +180,7 @@ class SchemeLexerTest {
         }
     }
 
-    // Will also create tests for full scm files
-
+    // Designed to return error, and show returned vs expected text
     @Test
     @DisplayName("What is in A")
     void s_token() {
