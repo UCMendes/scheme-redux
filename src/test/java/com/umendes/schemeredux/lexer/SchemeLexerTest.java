@@ -113,6 +113,18 @@ class SchemeLexerTest {
     }
 
     @Test
+    @DisplayName("Datum Label")
+    void datum_label() {
+
+        test_fragment = (Tokens.Fragment) testLexer.s_datum_label.parse("#75475844=");
+        assertEquals("#75475844=", test_fragment.text());
+
+        test_fragment = (Tokens.Fragment) testLexer.s_datum_reference.parse("#75475844#");
+        assertEquals("#75475844#", test_fragment.text());
+    }
+
+
+    @Test
     @DisplayName("Characters")
     // Also test for invalid case: char followed by char
     // Testing every keyword just in case

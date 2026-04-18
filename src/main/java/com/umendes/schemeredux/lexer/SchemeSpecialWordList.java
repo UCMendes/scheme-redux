@@ -60,7 +60,7 @@ public class SchemeSpecialWordList {
             "peek-char", "read-line", "eof-object?", "eof-object",
             "char-ready?", "read-string", "read-u8", "peek-u8", "u8-ready?",
             "read-bytevector", "read-bytevector!", "newline", "write-char",
-            "write-string", "write-u8", "write-bytevector", "flush-output-port", "features"};
-
+            "write-string", "write-u8", "write-bytevector", "flush-output-port",
+            "features", "caar", "cadr", "cdar", "cddr"};
 
 }
