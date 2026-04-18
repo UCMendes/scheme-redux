@@ -7,16 +7,17 @@ import com.intellij.lexer.LexerBase;
 import com.intellij.psi.tree.IElementType;
 
 // dot parse doesn't have token functionality yet(?) so this stays
+import org.jetbrains.annotations.NotNull;
 import org.jparsec.Tokens;
 
+// For testing
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.List;
 
 import static com.google.common.labs.parse.Parser.*;
 import static com.google.mu.util.CharPredicate.isNot;
 import static com.umendes.schemeredux.lexer.SchemeLexerHelper.*;
-import static java.util.Arrays.asList;
+import static com.umendes.schemeredux.lexer.SchemeSpecialWordList.*;
 import static java.util.stream.Collectors.joining;
 
 
@@ -84,7 +85,7 @@ public class SchemeLexer extends LexerBase
   // #vu8( does not exist in R7RS, adjusting to suit new specification
   Parser<?> s_op_open_vector = Parser.anyOf(string("#("), string("#u8("))
           .source().map((a) -> (Tokens.fragment(a, Tag.TAG_OP_OPEN_VECTOR)));
-  Parser<?> s_op_abbreviations = multiword(asList(",@", "#'", "#`", "#,@", "#,")).source()
+  Parser<?> s_op_abbreviations = multiword(terminalSort(new String[]{",@", "#'", "#`", "#,@", "#,"})).source()
           .map((a) -> (Tokens.fragment(a, Tag.TAG_OP_ABBREVIATIONS)));
   Parser<?> PAR_OPERATORS = Parser.anyOf(s_op_abbreviations, s_op_open_vector, s_op_single_char);
 
@@ -122,18 +123,13 @@ public class SchemeLexer extends LexerBase
                   PAR_BIN_INTEGER, PAR_OCT_INTEGER, PAR_DEC_INTEGER, PAR_HEX_INTEGER).source()
           .map((a) -> (Tokens.fragment(a, Tag.TAG_NUMBER)));
 //
-  // Characters
-  List<String> STRS_SPECIAL_CHAR_NAME = asList("nul", "alarm",
-          "backspace", "tab", "linefeed",
-          "newline", "vtab", "page", "return", "esc",
-          "space", "delete", "vtab", "λ",
-          "rubout", "bel", "vt", "nel", "ls");
+  // Characters, see SchemeSpecialWordList.java
   Parser<?> PT_SINGLE_CHAR = single(CharPredicate.ANY, "any");
   Parser<?> PT_HEX_CHAR = oneOf("xX", "hex marker").then(consecutive(HEX, "hex digit"))
           .notFollowedBy(PT_NAME_LITERAL, "variable name");
   Parser<?> PT_CHAR_PREFIX = string("#\\");
 
-  Parser<?> SCA_SPECIAL_CHAR_NAMES = multiword(STRS_SPECIAL_CHAR_NAME)
+  Parser<?> SCA_SPECIAL_CHAR_NAMES = multiword(terminalSort(STRS_SPECIAL_CHAR_NAME))
           .notFollowedBy(PT_NAME_LITERAL, "variable name");
 
   Parser<?> SCA_SINGLE_CHAR = PT_CHAR_PREFIX.then(PT_SINGLE_CHAR);
@@ -147,8 +143,8 @@ public class SchemeLexer extends LexerBase
           .map((a) -> (Tokens.fragment(a, Tag.TAG_QUOTE_STRING)));
 
   // Boolean
-  List<String> TERM_BOOLEAN = asList("#t", "#f", "#T", "#F");
-  Parser<?> s_boolean = multiword(TERM_BOOLEAN).source()
+  String[] TERM_BOOLEAN = {"#t", "#f", "#T", "#F"};
+  Parser<?> s_boolean = multiword(terminalSort(TERM_BOOLEAN)).source()
           .map((a) -> (Tokens.fragment(a, Tag.TAG_BOOLEAN)));
 
   // Sharp exclamation (#!eof, #!null, etc.)
@@ -162,54 +158,13 @@ public class SchemeLexer extends LexerBase
   /**
    * Built-in elements
    */
-  // Keyword
-  List<String> STRS_KEYWORD = asList(
-          "and", "begin", "case", "cond", "define",
-          "delay", "do", "else", "if", "lambda", "let",
-          "let*", "letrec", "or", "quote", "quasiquote",
-          "quasisyntax", "set!", "syntax", "unquote", "unquote-splicing",
-          "unsyntax", "unsyntax-splicing");
-  Parser<?> s_keywords = multiword(STRS_KEYWORD).notFollowedBy(PAR_NAME_LITERAL, "variable name").source()
+  // Keywords, see SchemeSpecialWordList.java
+  Parser<?> s_keywords = multiword(terminalSort(STRS_KEYWORD))
+          .notFollowedBy(PAR_NAME_LITERAL, "variable name").source()
         .map((a) -> (Tokens.fragment(a, Tag.TAG_KEYWORD)));
 
-  // Built-in Procedures
-  String[] STRS_BUILTIN_PROCEDURE = {"*", "+", "-", "/",
-          "<", "<=", "=", "=>", ">", ">=",
-          "abs", "acos", "angle", "append",
-          "apply", "asin", "assert", "assertion-violation", "atan",
-          "begin0", "boolean=?", "boolean?", "caar",
-          "cadr", "call-with-current-continuation", "call-with-values", "call/cc", "car",
-          "cdddar", "cddddr", "cdr", "ceiling",
-          "char->integer", "char<=?", "char<?", "char=?", "char>=?",
-          "char>?", "char?", "complex?", "condition?",
-          "cons", "consi", "cos", "define-syntax",
-          "denominator", "div-and-mod", "div0-and-mod0", "div0", "div",
-          "dot", "dw", "dynamic-wind", "eq?",
-          "equal?", "eqv?", "error", "even?", "exact",
-          "exact-integer-sqrt", "exact?", "exp", "export", "expt",
-          "finite?", "floor", "for-each", "gcd", "identifier-syntax",
-          "imag-part", "import", "inexact", "inexact?",
-          "infinite?", "integer->char", "integer-valued?", "integer?",
-          "lcm", "length", "let*-values",
-          "let-syntax", "let-values", "letrec*", "letrec-syntax",
-          "library", "list", "list->string", "list->vector", "list-ref",
-          "list-tail", "list?", "log", "magnitude", "make-polar",
-          "make-rectangular", "make-string", "make-vector", "map", "max",
-          "min", "mod", "mod0", "nan?", "negative?",
-          "not", "null", "null?", "number->string", "number?",
-          "numerator", "odd?", "pair?", "positive?",
-          "procedure?", "quote", "raise", "raise-continuable",
-          "rational-valued?", "rational?", "rationalize", "real-part", "real-valued?",
-          "real?", "reverse", "round", "set-car!",
-          "set-cdr!", "sin", "sqrt", "string", "string->list",
-          "string->number", "string->symbol", "string-append", "string-copy", "string-for-each",
-          "string-length", "string-ref", "string<=?", "string<?", "string=?",
-          "string>=?", "string>?", "string?", "substring", "symbol->string",
-          "symbol=?", "symbol?", "syntax-rules", "tan", "throw",
-          "truncate", "values", "vector",
-          "vector->list", "vector-fill!", "vector-for-each", "vector-length", "vector-map",
-          "vector-ref", "vector-set!", "vector?", "with-exception-handler", "zero?"};
-  Parser<?> s_builtin_procedures = multiword(List.of(terminalSort(STRS_BUILTIN_PROCEDURE))).source()
+  // Built-in Procedures, see SchemeSpecialWordList.java
+  Parser<?> s_builtin_procedures = multiword(terminalSort(STRS_BUILTIN_PROCEDURE)).source()
           .notFollowedBy(PAR_NAME_LITERAL, "variable name")
           .map((a) -> (Tokens.fragment(a, Tag.TAG_PROCEDURE)));
 
@@ -231,7 +186,7 @@ Parser<Object> s_token = PAR_TOKEN
 //              System.out.println("a: " + a);
               if (a.getClass() == Tokens.Fragment.class) {
                 // If this is a valid token, get its type and text, else do the other stuff
-                // Also, set global variable token-frag to token fragment a, for later sorting
+                // Also, set global variable token-frag to token fragment a for later sorting
                 token_frag = (Tokens.Fragment)a;
                 token_length = ((Tokens.Fragment)a).text().length();
 
@@ -239,7 +194,7 @@ Parser<Object> s_token = PAR_TOKEN
 //                System.out.println("type: " + ((Tokens.Fragment)a).tag().toString());
 //                System.out.println("text: " + ((Tokens.Fragment)a).text());
 //
-//                try (FileWriter writer = new FileWriter("absolute file path to LexerTestDotParse.txt here", true)) {
+//                try (FileWriter writer = new FileWriter("Absolute path to LexerTestDotParse.txt", true)) {
 //                  writer.write("type: " + ((Tokens.Fragment)a).tag() + "\n");
 //                  writer.write("text: " + ((Tokens.Fragment)a).text() + "\n" + "\n");
 //
@@ -260,7 +215,7 @@ Parser<Object> s_token = PAR_TOKEN
 
   @Override
   // The values that go in these are probably determined by intellij?
-  public void start(CharSequence buffer, int startOffset, int endOffset, int initialState)
+  public void start(@NotNull CharSequence buffer, int startOffset, int endOffset, int initialState)
   {
 //    System.out.println("startOffset: " + startOffset + ", endOffset: " + endOffset
 //            + ". initialState: " + initialState);
@@ -482,7 +437,7 @@ Parser<Object> s_token = PAR_TOKEN
   }
 
   @Override
-  public CharSequence getBufferSequence()
+  public @NotNull CharSequence getBufferSequence()
   {
     return buffer;
   }
