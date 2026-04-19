@@ -128,8 +128,7 @@ public class SchemeLexer extends LexerBase
 
   // Datum labels, creation and reference
   Parser<String> DATUM_LABEL = sequence(string("#"), digits(),
-          string("="), (g1, g2, g3) -> g1+g2+g3)
-          .notFollowedBy(s_whitespace, "whitespace");
+          string("="), (g1, g2, g3) -> g1+g2+g3);
   Parser<?> s_datum_label = DATUM_LABEL
           .map((a) -> (Tokens.fragment(a, Tag.TAG_DATUM_LABEL)));
 

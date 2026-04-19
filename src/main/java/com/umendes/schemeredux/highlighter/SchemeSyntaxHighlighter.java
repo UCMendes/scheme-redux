@@ -1,14 +1,14 @@
 package com.umendes.schemeredux.highlighter;
 
 import com.intellij.lexer.Lexer;
+import com.intellij.openapi.editor.DefaultLanguageHighlighterColors;
 import com.intellij.openapi.editor.HighlighterColors;
-import com.intellij.openapi.editor.SyntaxHighlighterColors;
 import com.intellij.openapi.editor.colors.TextAttributesKey;
 import com.intellij.openapi.editor.markup.TextAttributes;
 import com.intellij.openapi.fileTypes.SyntaxHighlighterBase;
 import com.intellij.psi.tree.IElementType;
-import com.intellij.psi.tree.TokenSet;
 import com.intellij.ui.JBColor;
+import org.jetbrains.annotations.NonNls;
 import org.jetbrains.annotations.NotNull;
 import com.umendes.schemeredux.lexer.SchemeLexer;
 import com.umendes.schemeredux.lexer.SchemeTokens;
@@ -17,6 +17,7 @@ import java.awt.*;
 import java.util.HashMap;
 import java.util.Map;
 
+import static com.intellij.openapi.editor.colors.TextAttributesKey.createTempTextAttributesKey;
 import static com.intellij.openapi.editor.colors.TextAttributesKey.createTextAttributesKey;
 
 public class SchemeSyntaxHighlighter extends SyntaxHighlighterBase implements SchemeTokens
@@ -43,7 +44,7 @@ public class SchemeSyntaxHighlighter extends SyntaxHighlighterBase implements Sc
   public static final String COMMENT_ID = "Scheme Comment";
   public static final String IDENTIFIER_ID = "Scheme Identifier";
   public static final String NUMBER_ID = "Scheme Numbers";
-  public static final String STRING_ID = "Scheme Strings";
+  public static final String STRING_ID = "Scheme String";
   public static final String STRING_ESCAPE_ID = "Scheme String Escape";
   public static final String BAD_CHARACTER_ID = "Scheme Bad character";
   public static final String BRACES_ID = "Scheme Braces";
@@ -59,65 +60,52 @@ public class SchemeSyntaxHighlighter extends SyntaxHighlighterBase implements Sc
   public static final String DOT_ID = "Scheme Dot";
   public static final String ABBREVIATION_ID = "Scheme Abbreviation";
 
-  public TextAttributesKey COMMENT = createTextAttributesKey(COMMENT_ID, defaultFor(SyntaxHighlighterColors.LINE_COMMENT));
-  public TextAttributesKey IDENTIFIER = createTextAttributesKey(IDENTIFIER_ID, defaultFor(SyntaxHighlighterColors.KEYWORD));
-  public TextAttributesKey NUMBER = createTextAttributesKey(NUMBER_ID, defaultFor(SyntaxHighlighterColors.NUMBER));
-  public TextAttributesKey STRING = createTextAttributesKey(STRING_ID, defaultFor(SyntaxHighlighterColors.STRING));
-  public TextAttributesKey STRING_ESCAPE = createTextAttributesKey(STRING_ESCAPE_ID, defaultFor(SyntaxHighlighterColors.VALID_STRING_ESCAPE));
-  public TextAttributesKey BRACE = createTextAttributesKey(BRACES_ID, defaultFor(SyntaxHighlighterColors.BRACES));
-  public TextAttributesKey PAREN = createTextAttributesKey(PAREN_ID, defaultFor(SyntaxHighlighterColors.PARENTHS));
-  public TextAttributesKey LITERAL = createTextAttributesKey(LITERAL_ID, defaultFor(HighlighterColors.TEXT));
-  public TextAttributesKey CHAR = createTextAttributesKey(CHAR_ID, defaultFor(SyntaxHighlighterColors.STRING));
-  public TextAttributesKey BAD_CHARACTER = createTextAttributesKey(BAD_CHARACTER_ID, defaultFor(HighlighterColors.BAD_CHARACTER));
-  public TextAttributesKey KEYWORD = createTextAttributesKey(KEYWORD_ID, defaultFor(SyntaxHighlighterColors.KEYWORD));
-  public TextAttributesKey PROCEDURE = createTextAttributesKey(PROCEDURE_ID, defaultFor(SyntaxHighlighterColors.KEYWORD));
-  public TextAttributesKey SPECIAL = createTextAttributesKey(SPECIAL_ID, defaultFor(SyntaxHighlighterColors.KEYWORD));
-  public TextAttributesKey QUOTED_TEXT = createTextAttributesKey(QUOTED_TEXT_ID, brighter(HighlighterColors.TEXT));
-  public TextAttributesKey QUOTED_STRING = createTextAttributesKey(QUOTED_STRING_ID, brighter(SyntaxHighlighterColors.STRING));
-  public TextAttributesKey QUOTED_NUMBER = createTextAttributesKey(QUOTED_NUMBER_ID, brighter(SyntaxHighlighterColors.NUMBER));
-  public TextAttributesKey DOT = createTextAttributesKey(DOT_ID, brighter(SyntaxHighlighterColors.DOT));
-  public TextAttributesKey ABBREVIATION = createTextAttributesKey(ABBREVIATION_ID, defaultFor(SyntaxHighlighterColors.KEYWORD));
+  public TextAttributesKey COMMENT = createTextAttributesKey(COMMENT_ID, DefaultLanguageHighlighterColors.LINE_COMMENT);
+  public TextAttributesKey IDENTIFIER = createTextAttributesKey(IDENTIFIER_ID, DefaultLanguageHighlighterColors.IDENTIFIER);
+  public TextAttributesKey NUMBER = createTextAttributesKey(NUMBER_ID, DefaultLanguageHighlighterColors.NUMBER);
+  public TextAttributesKey STRING = createTextAttributesKey(STRING_ID, DefaultLanguageHighlighterColors.STRING);
+  public TextAttributesKey STRING_ESCAPE = createTextAttributesKey(STRING_ESCAPE_ID, DefaultLanguageHighlighterColors.VALID_STRING_ESCAPE);
+  public TextAttributesKey BRACE = createTextAttributesKey(BRACES_ID, DefaultLanguageHighlighterColors.BRACES);
+  public TextAttributesKey PAREN = createTextAttributesKey(PAREN_ID, DefaultLanguageHighlighterColors.PARENTHESES);
+  public TextAttributesKey LITERAL = createTextAttributesKey(LITERAL_ID, HighlighterColors.TEXT);
+  public TextAttributesKey CHAR = createTextAttributesKey(CHAR_ID, DefaultLanguageHighlighterColors.STRING);
+  public TextAttributesKey BAD_CHARACTER = createTextAttributesKey(BAD_CHARACTER_ID, HighlighterColors.BAD_CHARACTER);
+  public TextAttributesKey KEYWORD = createTextAttributesKey(KEYWORD_ID, DefaultLanguageHighlighterColors.KEYWORD);
+  public TextAttributesKey PROCEDURE = createTextAttributesKey(PROCEDURE_ID, DefaultLanguageHighlighterColors.KEYWORD);
+  public TextAttributesKey SPECIAL = createTextAttributesKey(SPECIAL_ID, DefaultLanguageHighlighterColors.KEYWORD);
+  public TextAttributesKey QUOTED_TEXT = brighter(QUOTED_TEXT_ID, HighlighterColors.TEXT);
+  public TextAttributesKey QUOTED_STRING = brighter(QUOTED_STRING_ID, DefaultLanguageHighlighterColors.STRING);
+  public TextAttributesKey QUOTED_NUMBER = brighter(QUOTED_NUMBER_ID, DefaultLanguageHighlighterColors.NUMBER);
+  public TextAttributesKey DOT = brighter(DOT_ID, DefaultLanguageHighlighterColors.DOT);
+  public TextAttributesKey ABBREVIATION = createTextAttributesKey(ABBREVIATION_ID, DefaultLanguageHighlighterColors.KEYWORD);
 
   public static TextAttributesKey[] EMPTY_KEYS = new TextAttributesKey[0];
 
   {
-    newFillMap(ATTRIBUTES, pack(COMMENT),
+    newFillMap(pack(COMMENT),
             SchemeTokens.LINE_COMMENT, SchemeTokens.BLOCK_COMMENT, SchemeTokens.DATUM_COMMENT);
-    newFillMap(ATTRIBUTES, pack(NUMBER), SchemeTokens.NUMBER_LITERAL);
-    newFillMap(ATTRIBUTES, pack(STRING), SchemeTokens.STRING_LITERAL);
-    newFillMap(ATTRIBUTES, pack(BRACE),
+    newFillMap(pack(NUMBER), SchemeTokens.NUMBER_LITERAL);
+    newFillMap(pack(STRING), SchemeTokens.STRING_LITERAL);
+    newFillMap(pack(BRACE),
             SchemeTokens.LEFT_SQUARE, SchemeTokens.RIGHT_SQUARE, SchemeTokens.LEFT_CURLY, SchemeTokens.RIGHT_CURLY);
-    newFillMap(ATTRIBUTES, pack(PAREN), SchemeTokens.LEFT_PAREN, SchemeTokens.RIGHT_PAREN);
-    newFillMap(ATTRIBUTES, pack(CHAR), SchemeTokens.CHAR_LITERAL);
-    newFillMap(ATTRIBUTES, pack(SPECIAL), SchemeTokens.SPECIAL);
-    newFillMap(ATTRIBUTES, pack(KEYWORD), SchemeTokens.KEYWORD, SchemeTokens.BOOLEAN_LITERAL);
-    newFillMap(ATTRIBUTES, pack(PROCEDURE), SchemeTokens.PROCEDURE);
-    newFillMap(ATTRIBUTES, pack(DOT), SchemeTokens.DOT);
-    newFillMap(ATTRIBUTES, pack(ABBREVIATION),
+    newFillMap(pack(PAREN), SchemeTokens.LEFT_PAREN, SchemeTokens.RIGHT_PAREN);
+    newFillMap(pack(CHAR), SchemeTokens.CHAR_LITERAL);
+    newFillMap(pack(SPECIAL), SchemeTokens.SPECIAL);
+    newFillMap(pack(KEYWORD), SchemeTokens.KEYWORD, SchemeTokens.BOOLEAN_LITERAL);
+    newFillMap(pack(PROCEDURE), SchemeTokens.PROCEDURE);
+    newFillMap(pack(DOT), SchemeTokens.DOT);
+    newFillMap(pack(ABBREVIATION),
             SchemeTokens.QUOTE, SchemeTokens.QUASIQUOTE, SchemeTokens.UNQUOTE, SchemeTokens.UNQUOTE_SPLICING,
             SchemeTokens.SYNTAX, SchemeTokens.QUASISYNTAX, SchemeTokens.UNSYNTAX, SchemeTokens.UNSYNTAX_SPLICING);
   }
 
-  protected void newFillMap(@NotNull Map<IElementType, TextAttributesKey[]> map, TextAttributesKey[] value, @NotNull TokenSet keys) {
-    newFillMap(map, value, keys.getTypes());
+  protected void newFillMap(TextAttributesKey[] value, @NotNull IElementType... types) {
+      for (IElementType type : types) {
+          SchemeSyntaxHighlighter.ATTRIBUTES.put(type, value);
+      }
   }
 
-  protected void newFillMap(@NotNull Map<IElementType, TextAttributesKey[]> map, TextAttributesKey[] value, @NotNull IElementType... types) {
-    IElementType[] var3 = types;
-    int var4 = types.length;
-
-    for(int var5 = 0; var5 < var4; ++var5) {
-      IElementType type = var3[var5];
-      map.put(type, value);
-    }
-  }
-
-  private TextAttributes defaultFor(TextAttributesKey key)
-  {
-    return key.getDefaultAttributes();
-  }
-
-  private TextAttributes brighter(TextAttributesKey key)
+  private TextAttributesKey brighter(@NonNls @NotNull String externalName, TextAttributesKey key)
   {
     TextAttributes attributes = key.getDefaultAttributes().clone();
     Color foregroundColor = attributes.getForegroundColor();
@@ -129,20 +117,6 @@ public class SchemeSyntaxHighlighter extends SyntaxHighlighterBase implements Sc
     {
       attributes.setForegroundColor(JBColor.DARK_GRAY);
     }
-    return attributes;
+    return createTempTextAttributesKey(externalName, attributes);
   }
-
-//  private static void setBrighter(TextAttributesKey key)
-//  {
-//    TextAttributes attributes = key.getDefaultAttributes();
-//    Color foregroundColor = attributes.getForegroundColor();
-//    if (foregroundColor != null)
-//    {
-//      attributes.setForegroundColor(foregroundColor.brighter());
-//    }
-//    else
-//    {
-//      attributes.setForegroundColor(JBColor.DARK_GRAY);
-//    }
-//  }
 }
