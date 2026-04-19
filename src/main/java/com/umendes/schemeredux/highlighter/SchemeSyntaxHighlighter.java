@@ -8,7 +8,6 @@ import com.intellij.openapi.editor.markup.TextAttributes;
 import com.intellij.openapi.fileTypes.SyntaxHighlighterBase;
 import com.intellij.psi.tree.IElementType;
 import com.intellij.ui.JBColor;
-import org.jetbrains.annotations.NonNls;
 import org.jetbrains.annotations.NotNull;
 import com.umendes.schemeredux.lexer.SchemeLexer;
 import com.umendes.schemeredux.lexer.SchemeTokens;
@@ -17,7 +16,6 @@ import java.awt.*;
 import java.util.HashMap;
 import java.util.Map;
 
-import static com.intellij.openapi.editor.colors.TextAttributesKey.createTempTextAttributesKey;
 import static com.intellij.openapi.editor.colors.TextAttributesKey.createTextAttributesKey;
 
 public class SchemeSyntaxHighlighter extends SyntaxHighlighterBase implements SchemeTokens
@@ -71,13 +69,15 @@ public class SchemeSyntaxHighlighter extends SyntaxHighlighterBase implements Sc
   public TextAttributesKey CHAR = createTextAttributesKey(CHAR_ID, DefaultLanguageHighlighterColors.STRING);
   public TextAttributesKey BAD_CHARACTER = createTextAttributesKey(BAD_CHARACTER_ID, HighlighterColors.BAD_CHARACTER);
   public TextAttributesKey KEYWORD = createTextAttributesKey(KEYWORD_ID, DefaultLanguageHighlighterColors.KEYWORD);
-  public TextAttributesKey PROCEDURE = createTextAttributesKey(PROCEDURE_ID, DefaultLanguageHighlighterColors.KEYWORD);
+  public TextAttributesKey PROCEDURE = createTextAttributesKey(PROCEDURE_ID, DefaultLanguageHighlighterColors.FUNCTION_DECLARATION);
   public TextAttributesKey SPECIAL = createTextAttributesKey(SPECIAL_ID, DefaultLanguageHighlighterColors.KEYWORD);
-  public TextAttributesKey QUOTED_TEXT = brighter(QUOTED_TEXT_ID, HighlighterColors.TEXT);
-  public TextAttributesKey QUOTED_STRING = brighter(QUOTED_STRING_ID, DefaultLanguageHighlighterColors.STRING);
-  public TextAttributesKey QUOTED_NUMBER = brighter(QUOTED_NUMBER_ID, DefaultLanguageHighlighterColors.NUMBER);
-  public TextAttributesKey DOT = brighter(DOT_ID, DefaultLanguageHighlighterColors.DOT);
   public TextAttributesKey ABBREVIATION = createTextAttributesKey(ABBREVIATION_ID, DefaultLanguageHighlighterColors.KEYWORD);
+
+  // Currently not being used in any significantly meaningful way
+  public TextAttributesKey QUOTED_TEXT = createTextAttributesKey(QUOTED_TEXT_ID, brighter(HighlighterColors.TEXT));
+  public TextAttributesKey QUOTED_STRING = createTextAttributesKey(QUOTED_STRING_ID, brighter(DefaultLanguageHighlighterColors.STRING));
+  public TextAttributesKey QUOTED_NUMBER = createTextAttributesKey(QUOTED_NUMBER_ID, brighter(DefaultLanguageHighlighterColors.NUMBER));
+  public TextAttributesKey DOT = createTextAttributesKey(DOT_ID, brighter(DefaultLanguageHighlighterColors.DOT));
 
   public static TextAttributesKey[] EMPTY_KEYS = new TextAttributesKey[0];
 
@@ -105,7 +105,7 @@ public class SchemeSyntaxHighlighter extends SyntaxHighlighterBase implements Sc
       }
   }
 
-  private TextAttributesKey brighter(@NonNls @NotNull String externalName, TextAttributesKey key)
+  private TextAttributes brighter(TextAttributesKey key)
   {
     TextAttributes attributes = key.getDefaultAttributes().clone();
     Color foregroundColor = attributes.getForegroundColor();
@@ -117,6 +117,6 @@ public class SchemeSyntaxHighlighter extends SyntaxHighlighterBase implements Sc
     {
       attributes.setForegroundColor(JBColor.DARK_GRAY);
     }
-    return createTempTextAttributesKey(externalName, attributes);
+    return attributes;
   }
 }
