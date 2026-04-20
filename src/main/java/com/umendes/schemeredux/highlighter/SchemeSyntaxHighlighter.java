@@ -49,6 +49,8 @@ public class SchemeSyntaxHighlighter extends SyntaxHighlighterBase implements Sc
   public static final String PAREN_ID = "Scheme Parentheses";
   public static final String LITERAL_ID = "Scheme Literal";
   public static final String CHAR_ID = "Scheme Character";
+  public static final String DATUM_LABEL_ID = "Scheme Datum Label";
+  public static final String DATUM_REFERENCE_ID = "Scheme Datum Reference";
   public static final String KEYWORD_ID = "Scheme Keyword";
   public static final String PROCEDURE_ID = "Scheme Procedure";
   public static final String SPECIAL_ID = "Scheme Special";
@@ -68,6 +70,8 @@ public class SchemeSyntaxHighlighter extends SyntaxHighlighterBase implements Sc
   public TextAttributesKey LITERAL = createTextAttributesKey(LITERAL_ID, HighlighterColors.TEXT);
   public TextAttributesKey CHAR = createTextAttributesKey(CHAR_ID, DefaultLanguageHighlighterColors.STRING);
   public TextAttributesKey BAD_CHARACTER = createTextAttributesKey(BAD_CHARACTER_ID, HighlighterColors.BAD_CHARACTER);
+  public TextAttributesKey DATUM_LABEL = createTextAttributesKey(DATUM_LABEL_ID, DefaultLanguageHighlighterColors.LABEL);
+  public TextAttributesKey DATUM_REFERENCE = createTextAttributesKey(DATUM_REFERENCE_ID, DefaultLanguageHighlighterColors.IDENTIFIER);
   public TextAttributesKey KEYWORD = createTextAttributesKey(KEYWORD_ID, DefaultLanguageHighlighterColors.KEYWORD);
   public TextAttributesKey PROCEDURE = createTextAttributesKey(PROCEDURE_ID, DefaultLanguageHighlighterColors.FUNCTION_DECLARATION);
   public TextAttributesKey SPECIAL = createTextAttributesKey(SPECIAL_ID, DefaultLanguageHighlighterColors.KEYWORD);
@@ -91,6 +95,8 @@ public class SchemeSyntaxHighlighter extends SyntaxHighlighterBase implements Sc
     newFillMap(pack(PAREN), SchemeTokens.LEFT_PAREN, SchemeTokens.RIGHT_PAREN);
     newFillMap(pack(CHAR), SchemeTokens.CHAR_LITERAL);
     newFillMap(pack(SPECIAL), SchemeTokens.SPECIAL);
+    newFillMap(pack(DATUM_LABEL), SchemeTokens.DATUM_LABEL);
+    newFillMap(pack(DATUM_REFERENCE), SchemeTokens.DATUM_REFERENCE);
     newFillMap(pack(KEYWORD), SchemeTokens.KEYWORD, SchemeTokens.BOOLEAN_LITERAL);
     newFillMap(pack(PROCEDURE), SchemeTokens.PROCEDURE);
     newFillMap(pack(DOT), SchemeTokens.DOT);

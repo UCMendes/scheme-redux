@@ -8,9 +8,6 @@ import java.util.Comparator;
 import java.util.List;
 
 import static com.google.common.labs.parse.Parser.*;
-import static com.google.common.labs.parse.Parser.digits;
-import static com.google.common.labs.parse.Parser.single;
-import static com.google.common.labs.parse.Parser.string;
 
 // Functions/Parsers created to assist SchemeLexer
 // May include code taken from jparsec

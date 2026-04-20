@@ -6,6 +6,7 @@ import com.intellij.psi.stubs.IntStubIndexExtension;
 import com.intellij.psi.stubs.StubIndexKey;
 import com.umendes.schemeredux.psi.impl.SchemeFile;
 import com.umendes.schemeredux.psi.impl.search.SchemeSourceFilterScope;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.Collection;
 
@@ -14,7 +15,7 @@ public class SchemeFullScriptNameIndex extends IntStubIndexExtension<SchemeFile>
 {
   public static final StubIndexKey<Integer, SchemeFile> KEY = StubIndexKey.createIndexKey("scm.script.fqn");
 
-  public StubIndexKey<Integer, SchemeFile> getKey()
+  public @NotNull StubIndexKey<Integer, SchemeFile> getKey()
   {
     return KEY;
   }

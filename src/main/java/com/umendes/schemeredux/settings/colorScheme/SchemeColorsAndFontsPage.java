@@ -31,7 +31,7 @@ public class SchemeColorsAndFontsPage implements ColorSettingsPage
   }
 
   @NotNull
-  public AttributesDescriptor[] getAttributeDescriptors()
+  public AttributesDescriptor @NotNull [] getAttributeDescriptors()
   {
     return ATTRS;
   }
@@ -52,6 +52,8 @@ public class SchemeColorsAndFontsPage implements ColorSettingsPage
             desc(SchemeSyntaxHighlighter.PAREN_ID, syntaxHighlighter.PAREN),
             desc(SchemeSyntaxHighlighter.BAD_CHARACTER_ID, syntaxHighlighter.BAD_CHARACTER),
             desc(SchemeSyntaxHighlighter.CHAR_ID, syntaxHighlighter.CHAR),
+            desc(SchemeSyntaxHighlighter.DATUM_LABEL_ID, syntaxHighlighter.DATUM_LABEL),
+            desc(SchemeSyntaxHighlighter.DATUM_REFERENCE_ID, syntaxHighlighter.DATUM_REFERENCE),
             desc(SchemeSyntaxHighlighter.LITERAL_ID, syntaxHighlighter.LITERAL),
             desc(SchemeSyntaxHighlighter.KEYWORD_ID, syntaxHighlighter.KEYWORD),
             desc(SchemeSyntaxHighlighter.PROCEDURE_ID, syntaxHighlighter.PROCEDURE),
@@ -68,7 +70,7 @@ public class SchemeColorsAndFontsPage implements ColorSettingsPage
   }
 
   @NotNull
-  public ColorDescriptor[] getColorDescriptors()
+  public ColorDescriptor @NotNull [] getColorDescriptors()
   {
     return new ColorDescriptor[0];
   }
@@ -99,6 +101,8 @@ public class SchemeColorsAndFontsPage implements ColorSettingsPage
             (define char #\\c)
             
             (define special #!eof)
+            
+            (let ((x '(#1=(a b) #1#))) (eq? (car x) (cadr x)))
             
             (let ((x '(1 3 5 7 9)))
               (do ((x x (cdr x))

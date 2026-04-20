@@ -17,7 +17,6 @@ public class SchemeParser implements PsiParser, SchemeTokens
     ASTNode theAst;
     builder.setDebugMode(true);
 
-    // Calls "do_parse" on builder
     theAst = do_parse(builder);
 
 //    printAstTree(theAst);
@@ -28,10 +27,8 @@ public class SchemeParser implements PsiParser, SchemeTokens
   ASTNode do_parse(PsiBuilder builder)
   {
     ASTNode theAst;
-
-    // Marker at current parsing position, the builder is something you can iterate through?
+    // Places a marker at the very beginning of the file, parses everything, then stops at .done
     PsiBuilder.Marker marker = builder.mark();
-    // Initialisation;stopping condition;change condition
     for (IElementType token = builder.getTokenType(); token != null; token = builder.getTokenType())
     {
 //      System.out.println("token type: " + token.toString() + ", token text: "
@@ -49,9 +46,9 @@ public class SchemeParser implements PsiParser, SchemeTokens
   }
 
   // Helpers
-  boolean isParen(IElementType type) {
-    return LEFT_PAREN == type || RIGHT_PAREN == type ||
-            LEFT_SQUARE == type || RIGHT_SQUARE == type;
+  boolean isNotParen(IElementType type) {
+    return LEFT_PAREN != type && RIGHT_PAREN != type &&
+            LEFT_SQUARE != type && RIGHT_SQUARE != type;
   }
 
   IElementType atomMarkType(IElementType type)
@@ -73,6 +70,9 @@ public class SchemeParser implements PsiParser, SchemeTokens
     }
     else if (PROCEDURE == type) {
       return AST.AST_BASIC_ELE_PROCEDURE;
+    }
+    else if (DATUM_REFERENCE == type) {
+      return AST.AST_DATUM_REFERENCE;
     }
     else if (NAME_LITERAL == type
              || IDENTIFIER == type) {
@@ -582,56 +582,61 @@ public class SchemeParser implements PsiParser, SchemeTokens
 
   IElementType parseTopAndLocalForm(PsiBuilder builder, IElementType close, String text)
   {
-    IElementType mark_type = switch (text) {
-        case "and" -> parseFormAnd(builder, close);
-        case "begin" -> parseFormBegin(builder, close);
-        case "car" -> parseFormCar(builder, close);
-        case "cdr" -> parseFormCdr(builder, close);
-        case "cond" -> parseFormCond(builder, close);
-        case "cons" -> parseFormCons(builder, close);
-        case "define" -> parseFormDefine(builder, close);
-        case "define-record-type" -> parseFormDefineRecordType(builder, close);
-        case "define-syntax" -> parseFormDefineSyntax(builder, close);
-        case "do" -> parseFormDo(builder, close);
-        case "export" -> parseFormExport(builder, close);
-        case "if" -> parseFormIf(builder, close);
-        case "import" -> parseFormImport(builder, close);
-        case "lambda" -> parseFormLambda(builder, close);
-        case "let" -> parseFormLetForms(builder, close, AST.AST_FORM_LET);
-        case "letrec" -> parseFormLetForms(builder, close, AST.AST_FORM_LETREC);
-        case "let*" -> parseFormLetForms(builder, close, AST.AST_FORM_LET_A);
-        case "list" -> parseFormList(builder, close);
-        case "not" -> parseFormNot(builder, close);
-        case "or" -> parseFormOr(builder, close);
-        case "set!" -> parseFormSet(builder, close);
-        case "unless" -> parseFormUnless(builder, close);
-        case "when" -> parseFormWhen(builder, close);
-        default -> null;
-    };
-      return mark_type;
+      return switch (text) {
+          case "and" -> parseFormAnd(builder, close);
+          case "begin" -> parseFormBegin(builder, close);
+          case "car" -> parseFormCar(builder, close);
+          case "cdr" -> parseFormCdr(builder, close);
+          case "cond" -> parseFormCond(builder, close);
+          case "cons" -> parseFormCons(builder, close);
+          case "define" -> parseFormDefine(builder, close);
+          case "define-record-type" -> parseFormDefineRecordType(builder, close);
+          case "define-syntax" -> parseFormDefineSyntax(builder, close);
+          case "do" -> parseFormDo(builder, close);
+          case "export" -> parseFormExport(builder, close);
+          case "if" -> parseFormIf(builder, close);
+          case "import" -> parseFormImport(builder, close);
+          case "lambda" -> parseFormLambda(builder, close);
+          case "let" -> parseFormLetForms(builder, close, AST.AST_FORM_LET);
+          case "letrec" -> parseFormLetForms(builder, close, AST.AST_FORM_LETREC);
+          case "let*" -> parseFormLetForms(builder, close, AST.AST_FORM_LET_A);
+          case "list" -> parseFormList(builder, close);
+          case "not" -> parseFormNot(builder, close);
+          case "or" -> parseFormOr(builder, close);
+          case "set!" -> parseFormSet(builder, close);
+          case "unless" -> parseFormUnless(builder, close);
+          case "when" -> parseFormWhen(builder, close);
+          default -> null;
+      };
   }
 
   private IElementType parseTopList(PsiBuilder builder, IElementType open, IElementType close)
   {
+    // Mark this element as a plain list
+    // Then move on and see what the next token is
     IElementType mark_type = AST.AST_PLAIN_LIST;
     PsiBuilder.Marker marker = markAndAdvance(builder);
 
+    // Move past datum comments
     helperListAdvance(builder, close, 0);
 
+    // If the token type isn't known
     IElementType token_type = builder.getTokenType();
     if (token_type == null) {
-      builder.error("parse sexp failed");
+      builder.error("Parse sexp failed");
       marker.drop();
       return null;
     }
 
+    // If the token is somehow null
     String token_text = builder.getTokenText();
     if (token_text == null) {
-      builder.error("token is null, something is wrong");
+      builder.error("Token is null, something is wrong");
       marker.drop();
       return null;
     }
 
+    // if the next token is a closing bracket, so just () or []:
     if (token_type == close) {
       builder.advanceLexer();
       marker.done(mark_type);
@@ -643,17 +648,20 @@ public class SchemeParser implements PsiParser, SchemeTokens
     helperListAdvance(builder, close, 0);
     if (exp_type == null)
     {
-      builder.error("parse sexp failed");
+      builder.error("Parse sexp failed");
       marker.drop();
       return null;
     }
+    // As this runs, passes the closing bracket type to subsequent functions
     else if ((exp_type == AST.AST_BASIC_ELE_KEYWORD)
             || (exp_type == AST.AST_BASIC_ELE_PROCEDURE)
             || (exp_type == AST.AST_FORM_PROCEDURE))
     {
+      // is this a library?
       mark_type = parseTopOnlyForm(builder, close, token_text);
       if (mark_type == null)
       {
+        // is this a keyword or procedure? (if so, deal with it accordingly)
         mark_type = parseTopAndLocalForm(builder, close, token_text);
         if (mark_type == null)
         {
@@ -699,8 +707,8 @@ public class SchemeParser implements PsiParser, SchemeTokens
   void parseTopSexp(IElementType type, PsiBuilder builder)
   {
     type = builder.getTokenType();
-    if (!isParen(type)) {
-      parseNonParen(type, builder);
+    if (isNotParen(type)) {
+      parseNonParen(builder);
     } else {
       parseTopParen(type, builder);
     }
@@ -721,9 +729,11 @@ public class SchemeParser implements PsiParser, SchemeTokens
     marker.done(mark_type);
   }
 
-  IElementType parseAtom(IElementType type, PsiBuilder builder)
+  IElementType parseAtom(PsiBuilder builder)
   {
-    type = builder.getTokenType();
+    // Surround this section with a marker , move lexer forward by one, and inspect next token
+    // When done, label this marker with the element type found
+    IElementType type = builder.getTokenType();
     PsiBuilder.Marker marker = builder.mark();
     builder.advanceLexer();
     IElementType mark_type = atomMarkType(type);
@@ -731,14 +741,16 @@ public class SchemeParser implements PsiParser, SchemeTokens
     return mark_type;
   }
 
-  IElementType parsePrefix(IElementType type, PsiBuilder builder)
+  IElementType parsePrefixOrLabel(PsiBuilder builder)
   {
-    type = builder.getTokenType();
+    IElementType type = builder.getTokenType(); // DATUM_LABEL
     PsiBuilder.Marker marker = builder.mark();
     builder.advanceLexer();
-    IElementType childType = builder.getTokenType();
-    IElementType mark_type = null;
+    // What follows this prefix?
+    IElementType childType = builder.getTokenType(); // DATUM_REFERENCE? for example
+    IElementType mark_type;
 
+    // If nothing follows the prefix:
     if (childType == null ||
         WHITESPACE == childType ||
         COMMENTS.contains(childType))
@@ -748,6 +760,7 @@ public class SchemeParser implements PsiParser, SchemeTokens
       return null;
     }
 
+    // Parse the child, and treat it as a datum_comment?
     if (DATUM_COMMENT_PRE == type) {
       parseSexp(childType, builder);
       mark_type = SchemeTokens.DATUM_COMMENT;
@@ -756,10 +769,10 @@ public class SchemeParser implements PsiParser, SchemeTokens
     }
 
     if (DATUM_PREFIXES.contains(type)) {
-      if (!isParen(childType)) {
+      if (isNotParen(childType)) {
         PsiBuilder.Marker symbol_marker = builder.mark();
         PsiBuilder.Marker literal_marker = builder.mark();
-        parseNonParen(childType, builder);
+        parseNonParen(builder);
         literal_marker.collapse(SchemeTokens.NAME_LITERAL);
         symbol_marker.done(AST.AST_BASIC_ELE_SYMBOL);
       } else {
@@ -770,6 +783,20 @@ public class SchemeParser implements PsiParser, SchemeTokens
       return mark_type;
     }
 
+    if (DATUM_LABEL == type) {
+      if (isNotParen(childType)) {
+        PsiBuilder.Marker symbol_marker = builder.mark();
+        parseNonParen(builder);
+        symbol_marker.done(AST.AST_DATUM_LABEL_CONTENT);
+      } else {
+        parseParen(childType, builder);
+      }
+      mark_type = AST.AST_DATUM_LABEL;
+      marker.done(AST.AST_DATUM_LABEL);
+      return mark_type;
+    }
+
+
     syntaxError(builder, "Run Error");
     marker.drop();
     return null;
@@ -779,17 +806,18 @@ public class SchemeParser implements PsiParser, SchemeTokens
   {
     PsiBuilder.Marker marker = builder.mark();
     builder.advanceLexer();
-    IElementType mark_type  = eatRemainList(builder, RIGHT_PAREN, AST.AST_ELE_VECTOR);
+    IElementType mark_type = eatRemainList(builder, RIGHT_PAREN, AST.AST_ELE_VECTOR);
     marker.done(mark_type);
     return mark_type;
   }
 
-  IElementType parseNonParen(IElementType type, PsiBuilder builder)
+  IElementType parseNonParen(PsiBuilder builder)
   {
-    type = builder.getTokenType();
+    IElementType type = builder.getTokenType();
     if (DATUM_PREFIXES.contains(type)
-        || DATUM_COMMENT_PRE == type) {
-      return parsePrefix(type, builder);
+        || DATUM_COMMENT_PRE == type
+        || DATUM_LABEL == type) {
+      return parsePrefixOrLabel(builder);
     }
     else if (OPEN_VECTOR == type)
     {
@@ -797,7 +825,7 @@ public class SchemeParser implements PsiParser, SchemeTokens
     }
     else
     {
-      return parseAtom(type, builder);
+      return parseAtom(builder);
     }
   }
 
@@ -832,8 +860,8 @@ public class SchemeParser implements PsiParser, SchemeTokens
   IElementType parseSexp(IElementType type, PsiBuilder builder)
   {
     type = builder.getTokenType();
-    if (!isParen(type)) {
-      return parseNonParen(type, builder);
+    if (isNotParen(type)) {
+      return parseNonParen(builder);
     } else {
       return parseParen(type, builder);
     }
@@ -876,14 +904,14 @@ public class SchemeParser implements PsiParser, SchemeTokens
 
     IElementType token_type = builder.getTokenType();
     if (token_type == null) {
-      builder.error("parse sexp failed");
+      builder.error("Parse sexp failed");
       marker.drop();
       return null;
     }
 
     String token_text = builder.getTokenText();
     if (token_text == null) {
-      builder.error("token is null, something is wrong");
+      builder.error("Token is null, something is wrong");
       marker.drop();
       return null;
     }
@@ -898,7 +926,7 @@ public class SchemeParser implements PsiParser, SchemeTokens
     exp_type = parseSexp(token_type, builder);
     if (exp_type == null)
     {
-      builder.error("parse sexp failed");
+      builder.error("Parse sexp failed");
       marker.drop();
       return null;
     }

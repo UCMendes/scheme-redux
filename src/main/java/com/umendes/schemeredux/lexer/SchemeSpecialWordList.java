@@ -9,7 +9,7 @@ public class SchemeSpecialWordList {
     static String[] STRS_KEYWORD = {
             "quote", "lambda", "if", "set!", "include", "include-ci",
             "cond", "else", "=>", "case", "and", "or", "when", "unless",
-            "cond-expand", "let", "let*", "letrec", "letrec*", "let-values",
+            "cond-expand", "library", "let", "let*", "letrec", "letrec*", "let-values",
             "let*-values", "begin", "do", "parameterize", "guard",
             "quasiquote", "unquote", "unquote-splicing", "let-syntax",
             "letrec-syntax", "syntax-rules", "...", "syntax-error",

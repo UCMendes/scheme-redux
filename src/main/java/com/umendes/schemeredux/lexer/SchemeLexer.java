@@ -402,11 +402,19 @@ Parser<Object> s_token = PAR_TOKEN
         type = SchemeTokens.STRING_LITERAL;
         return;
 
+      case TAG_DATUM_LABEL:
+        type = SchemeTokens.DATUM_LABEL;
+        break;
+
+      case TAG_DATUM_REFERENCE:
+        type = SchemeTokens.DATUM_REFERENCE;
+        break;
+
         case TAG_KEYWORD:
         type = SchemeTokens.KEYWORD;
         break;
 
-      case TAG_PROCEDURE, TAG_DATUM_LABEL, TAG_DATUM_REFERENCE:
+      case TAG_PROCEDURE:
         type = SchemeTokens.PROCEDURE;
         break;
 

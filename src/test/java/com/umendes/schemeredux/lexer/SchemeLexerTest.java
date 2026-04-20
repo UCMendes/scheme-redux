@@ -1,15 +1,9 @@
 package com.umendes.schemeredux.lexer;
 
-import com.google.common.labs.parse.Parser;
-import com.google.mu.util.CharPredicate;
 import org.jparsec.Tokens;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-import static com.google.common.labs.parse.Parser.consecutive;
-import static com.google.common.labs.parse.Parser.string;
-import static com.google.mu.util.CharPredicate.isNot;
-import static java.util.stream.Collectors.joining;
 import static org.junit.jupiter.api.Assertions.*;
 
 class SchemeLexerTest {

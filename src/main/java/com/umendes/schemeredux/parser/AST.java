@@ -46,6 +46,9 @@ public interface AST
   IElementType AST_FORM_QUASISYNTAX = new SchemeElementType("ast quasisyntax");
   IElementType AST_FORM_UNSYNTAX = new SchemeElementType("ast unsyntax");
   IElementType AST_FORM_UNSYNTAX_SPLICING = new SchemeElementType("ast unsyntax-splicing");
+  IElementType AST_DATUM_LABEL = new SchemeElementType("ast datum label");
+  IElementType AST_DATUM_LABEL_CONTENT = new SchemeElementType("ast datum label content");
+  IElementType AST_DATUM_REFERENCE = new SchemeElementType("ast datum reference");
 
   // Data structure forms
   IElementType AST_FORM_CAR = new SchemeElementType("ast car");

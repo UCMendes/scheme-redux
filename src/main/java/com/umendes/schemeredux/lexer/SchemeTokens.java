@@ -46,6 +46,8 @@ public interface SchemeTokens
   TokenSet LITERALS = TokenSet.create(NAME_LITERAL);
 
   IElementType IDENTIFIER = new SchemeElementType("identifier");
+  IElementType DATUM_LABEL = new SchemeElementType("datum label");
+  IElementType DATUM_REFERENCE = new SchemeElementType("datum reference");
   IElementType KEYWORD = new SchemeElementType("keyword");
   IElementType PROCEDURE = new SchemeElementType("procedure");
 

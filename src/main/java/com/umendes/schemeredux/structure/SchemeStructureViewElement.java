@@ -63,8 +63,7 @@ public class SchemeStructureViewElement implements StructureViewTreeElement, Sor
     return presentation != null ? presentation : new PresentationData();
   }
 
-  @NotNull
-  public StructureViewTreeElement[] getChildren()
+  public StructureViewTreeElement @NotNull [] getChildren()
   {
     final List<SchemeStructureViewElement> childrenElements = new ArrayList<>();
 

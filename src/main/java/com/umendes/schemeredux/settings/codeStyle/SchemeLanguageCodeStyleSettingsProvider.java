@@ -28,7 +28,7 @@ public class SchemeLanguageCodeStyleSettingsProvider extends LanguageCodeStyleSe
     }
 
     @Override
-    public CommonCodeStyleSettings getDefaultCommonSettings() {
+    public @NotNull CommonCodeStyleSettings getDefaultCommonSettings() {
         CommonCodeStyleSettings defaultSettings = new CommonCodeStyleSettings(SchemeLanguage.INSTANCE);
         defaultSettings.initIndentOptions();
         CommonCodeStyleSettings.IndentOptions indentOptions = defaultSettings.getIndentOptions();
