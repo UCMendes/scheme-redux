@@ -91,7 +91,7 @@ public class SchemeParserDefinition implements ParserDefinition
     return SpaceRequirements.MUST;
   }
 
-  public PsiFile createFile(FileViewProvider viewProvider)
+  public @NotNull PsiFile createFile(FileViewProvider viewProvider)
   {
     SchemePsiCreator psiCreator = scheme.getPsiCreator();
     return psiCreator.createFile(viewProvider);

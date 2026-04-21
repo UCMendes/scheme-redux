@@ -101,7 +101,7 @@ public class SchemeSymbol extends SchemePsiElementBase  implements PsiReference
     return CompleteSymbol.getVariants(this);
   }
 
-  public String getCanonicalText()
+  public @NotNull String getCanonicalText()
   {
     return getText();
   }

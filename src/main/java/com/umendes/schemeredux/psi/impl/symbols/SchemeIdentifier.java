@@ -40,12 +40,12 @@ public class SchemeIdentifier extends SchemePsiElementBase implements PsiReferen
     return "SchemeIdentifier: " + getReferenceName();
   }
 
-  public PsiElement getElement()
+  public @NotNull PsiElement getElement()
   {
     return this;
   }
 
-  public TextRange getRangeInElement()
+  public @NotNull TextRange getRangeInElement()
   {
     PsiElement refNameElement = getReferenceNameElement();
     if (refNameElement != null)

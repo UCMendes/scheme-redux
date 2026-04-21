@@ -20,7 +20,7 @@ public class SchemePsiUtil
 
   public static PsiElement getNormalChildAt(PsiElement element, int index)
   {
-    if (null == element)
+    if (element == null)
     {
       return null;
     }
@@ -30,8 +30,9 @@ public class SchemePsiUtil
     }
 
     PsiElement child;
+    // First child = element immediately following parent
     child = element.getFirstChild();
-    if (null == child)
+    if (child == null)
     {
       return null;
     }
@@ -48,7 +49,7 @@ public class SchemePsiUtil
       }
 
       child = child.getNextSibling();
-      if (null == child)
+      if (child == null)
       {
         break;
       }
@@ -135,22 +136,24 @@ public class SchemePsiUtil
     return null;
   }
 
+  // Recursive function, to backtrack until a parent is found
   public static PsiElement getBigBrother(PsiElement element)
   {
-    if (null == element)
+    if (element == null)
     {
       return null;
     }
     PsiElement bigBrother;
+    // get the older sibling of this element and return if it exists
     bigBrother = element.getPrevSibling();
-    if (null != bigBrother)
+    if (bigBrother != null)
     {
       return bigBrother;
     }
 
     PsiElement parent;
     parent = element.getParent();
-    if (null == parent)
+    if (parent == null)
     {
       return null;
     }

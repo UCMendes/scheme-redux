@@ -63,6 +63,18 @@ public class SchemePsiCreator
     {
       return new SchemeVector(node);
     }
+    else if (elementType == AST.AST_DATUM_LABEL)
+    {
+      return new SchemeDatumLabel(node);
+    }
+    else if (elementType == AST.AST_DATUM_LABEL_CONTENT)
+    {
+      return new SchemeDatumLabelContent(node);
+    }
+    else if (elementType == AST.AST_DATUM_REFERENCE)
+    {
+      return new SchemeDatumReference(node);
+    }
     else if (elementType == AST.AST_FORM_AND)
     {
       return new SchemeFormAnd(node);

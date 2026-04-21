@@ -74,9 +74,7 @@ public interface AST
   IElementType AST_FORM_OR = new SchemeElementType("ast or");
   IElementType AST_FORM_NOT = new SchemeElementType("ast not");
 
-  // Macro form
-
-
+  // Other form
   IElementType AST_BAD_CHARACTER = new SchemeElementType("ast bad character");
   IElementType AST_UNRECOGNIZED_FORM = new SchemeElementType("ast unrecognized form");
   IElementType AST_BAD_ELEMENT = new SchemeElementType("ast bad element");

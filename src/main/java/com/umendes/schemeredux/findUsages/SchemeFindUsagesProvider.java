@@ -4,6 +4,7 @@ import com.intellij.lang.cacheBuilder.DefaultWordsScanner;
 import com.intellij.lang.cacheBuilder.WordsScanner;
 import com.intellij.lang.findUsages.FindUsagesProvider;
 import com.intellij.psi.PsiElement;
+import com.umendes.schemeredux.psi.impl.SchemeDatumReference;
 import com.umendes.schemeredux.psi.impl.SchemeSymbol;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -21,8 +22,7 @@ public class SchemeFindUsagesProvider implements FindUsagesProvider
 
   public boolean canFindUsagesFor(@NotNull PsiElement psiElement)
   {
-//    return psiElement instanceof SchemeSymbol;
-    return true;
+    return psiElement instanceof SchemeSymbol || psiElement instanceof SchemeDatumReference;
   }
 
   public String getHelpId(@NotNull PsiElement psiElement)
