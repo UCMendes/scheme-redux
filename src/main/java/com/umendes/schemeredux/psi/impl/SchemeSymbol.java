@@ -26,7 +26,7 @@ import com.umendes.schemeredux.psi.util.SchemePsiElementFactory;
 import javax.swing.Icon;
 
 
-public class SchemeSymbol extends SchemePsiElementBase  implements PsiReference
+public class SchemeSymbol extends SchemePsiElementBase implements PsiReference
 {
   public SchemeSymbol(ASTNode node)
   {
@@ -95,8 +95,7 @@ public class SchemeSymbol extends SchemePsiElementBase  implements PsiReference
     };
   }
 
-  @NotNull
-  public Object[] getVariants()
+  public Object @NotNull [] getVariants()
   {
     return CompleteSymbol.getVariants(this);
   }
@@ -113,9 +112,9 @@ public class SchemeSymbol extends SchemePsiElementBase  implements PsiReference
 
   public boolean isReferenceTo(@NotNull PsiElement element)
   {
-    if (element instanceof SchemeSymbolDefine)
+    // System.out.println("Did you manage to get here? (symbol is reference to) good");
+    if (element instanceof SchemeSymbolDefine symbol)
     {
-      SchemeSymbolDefine symbol = (SchemeSymbolDefine)element;
       String referenceName = getReferenceName();
       if ((referenceName != null) && referenceName.equals(symbol.getName()))
       {
@@ -125,7 +124,7 @@ public class SchemeSymbol extends SchemePsiElementBase  implements PsiReference
     return false;
   }
 
-  public PsiElement handleElementRename(String newElementName) throws IncorrectOperationException
+  public PsiElement handleElementRename(@NotNull String newElementName) throws IncorrectOperationException
   {
     ASTNode thisNode = getNode();
     ASTNode newNode = SchemePsiElementFactory.getInstance(getProject()).createSymbolNodeFromText(newElementName);
@@ -142,6 +141,7 @@ public class SchemeSymbol extends SchemePsiElementBase  implements PsiReference
 
   public PsiElement resolve()
   {
+    //  System.out.println("Did you manage to get here? (symbol resolve) good");
     PsiElement brother;
     brother = this.getPrevSibling();
     while (brother != null)
@@ -168,46 +168,53 @@ public class SchemeSymbol extends SchemePsiElementBase  implements PsiReference
         return null;
       }
       if (!(cur_ele instanceof SchemeInFormParamListLetInner)) {
-        if (parent instanceof SchemeFormLetBase) {
-          PsiElement find = findInLetForm((SchemeFormLetBase) parent, this);
-          if (find != null) {
-            return find;
-          }
-        } else if (parent instanceof SchemeFormDefine) {
-          PsiElement find = findInDefineForm((SchemeFormDefine)parent, this);
-          if (find != null) {
-            return find;
-          }
-        } else if (parent instanceof SchemeFormDo) {
-          PsiElement find = findInDoForm((SchemeFormDo)parent, this);
-          if (find != null) {
-            return find;
-          }
-        } else if (parent instanceof SchemeFormProcedure) {
-          PsiElement find = findInProcedure((SchemeFormProcedure)parent, this);
-          if (find != null) {
-            return find;
-          }
-        } else if (parent instanceof SchemeFormImport) {
-          return getFilesByName(getProject(), this.getText(), GlobalSearchScope.allScope(getProject()));
-        } else {
-          if (parent instanceof SchemeFormDefineBase) {
-            PsiElement dec = ((SchemeFormDefineBase)parent).getDeclareName();
-            if (dec != null && dec.textMatches(this)) {
-              return dec;
-            }
-          }
-          if (parent instanceof SchemeFormLocalBase) {
-            PsiElement[] defs = ((SchemeFormLocalBase)parent).getLocalDefinitions();
-//        System.out.println("my text: " + this.getText());
-            for (PsiElement def : defs) {
-//          System.out.println("localDefinition: " + def.getText());
-              if (def.textMatches(this)) {
-                return def;
+          switch (parent) {
+              case SchemeFormLetBase schemeFormLetBase -> {
+                  PsiElement find = findInLetForm(schemeFormLetBase, this);
+                  if (find != null) {
+                      return find;
+                  }
               }
-            }
+              case SchemeFormDefine schemeFormDefine -> {
+                  PsiElement find = findInDefineForm(schemeFormDefine, this);
+                  if (find != null) {
+                      return find;
+                  }
+              }
+              case SchemeFormDo schemeFormDo -> {
+                  PsiElement find = findInDoForm(schemeFormDo, this);
+                  if (find != null) {
+                      return find;
+                  }
+              }
+              case SchemeFormProcedure schemeFormProcedure -> {
+                  PsiElement find = findInProcedure(schemeFormProcedure, this);
+                  if (find != null) {
+                      return find;
+                  }
+              }
+              case SchemeFormImport schemeFormImport -> {
+                  return getFilesByName(getProject(), this.getText(), GlobalSearchScope.allScope(getProject()));
+              }
+              default -> {
+                  if (parent instanceof SchemeFormDefineBase) {
+                      PsiElement dec = ((SchemeFormDefineBase) parent).getDeclareName();
+                      if (dec != null && dec.textMatches(this)) {
+                          return dec;
+                      }
+                  }
+                  if (parent instanceof SchemeFormLocalBase) {
+                      PsiElement[] defs = ((SchemeFormLocalBase) parent).getLocalDefinitions();
+//        System.out.println("my text: " + this.getText());
+                      for (PsiElement def : defs) {
+//          System.out.println("localDefinition: " + def.getText());
+                          if (def.textMatches(this)) {
+                              return def;
+                          }
+                      }
+                  }
+              }
           }
-        }
       }
 
       brother = parent.getPrevSibling();

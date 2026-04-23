@@ -1,22 +1,28 @@
 package com.umendes.schemeredux.psi.impl;
 
 import com.intellij.lang.ASTNode;
-import com.intellij.openapi.util.NlsSafe;
 import com.intellij.openapi.util.TextRange;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiReference;
 import com.intellij.util.IncorrectOperationException;
 import com.umendes.schemeredux.psi.util.SchemePsiElementFactory;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
+import javax.swing.*;
 import java.util.Objects;
+
 
 public class SchemeDatumReference extends SchemePsiElementBase implements PsiReference
 {
     public SchemeDatumReference(ASTNode node)
     {
         super(node, "SchemeDatumReference");
+    }
+
+    @Override
+    public PsiReference getReference()
+    {
+        return this;
     }
 
     @Override
@@ -31,7 +37,7 @@ public class SchemeDatumReference extends SchemePsiElementBase implements PsiRef
     }
 
     @Override
-    public @NotNull @NlsSafe String getCanonicalText() {
+    public @NotNull String getCanonicalText() {
         return getText();
     }
 
@@ -42,23 +48,23 @@ public class SchemeDatumReference extends SchemePsiElementBase implements PsiRef
     }
 
     @Override
-    public @Nullable PsiElement resolve() {
-        System.out.println("Did you manage to get here? good");
+    public PsiElement resolve() {
+        //todo implement same-scope (here or in parser?)
         PsiElement brother;
         brother = this.getPrevSibling();
         while (brother != null)
         {
             if (brother instanceof SchemeDatumLabel datumLabel) {
-                String labelName = datumLabel.getName();
-                String labelSubstring = Objects.requireNonNull(labelName).substring(0, labelName.length() - 1);
+                String labelName = datumLabel.toString();
+                String labelSubstring = Objects.requireNonNull(labelName).substring(0, labelName.indexOf("="));
                 System.out.println(labelName);
                 System.out.println(labelSubstring);
                 if (getFormattedCanonicalText().equals(labelSubstring))
                 {
                     return datumLabel;
                 }
-            brother = brother.getPrevSibling();
             }
+            brother = brother.getPrevSibling();
         }
         return null;
     }
@@ -83,11 +89,9 @@ public class SchemeDatumReference extends SchemePsiElementBase implements PsiRef
     @Override
     public boolean isReferenceTo(@NotNull PsiElement psiElement)
     {
-        System.out.println("Did you manage to get here? good");
         // Format both datum label and datum reference names, if they're the same, then check for reference
         if (psiElement instanceof SchemeDatumLabel datumLabel)
         {
-            System.out.println("Did you manage to get here? good");
             String labelName = datumLabel.getName();
             if (getFormattedCanonicalText().equals(
                     Objects.requireNonNull(labelName).substring(0, labelName.length() -1)))

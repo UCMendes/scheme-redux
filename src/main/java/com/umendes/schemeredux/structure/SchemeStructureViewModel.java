@@ -6,10 +6,7 @@ import com.intellij.ide.structureView.StructureViewTreeElement;
 import com.intellij.ide.util.treeView.smartTree.Sorter;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.psi.PsiFile;
-import com.umendes.schemeredux.psi.impl.SchemeFormDefineBase;
-import com.umendes.schemeredux.psi.impl.SchemeFormExport;
-import com.umendes.schemeredux.psi.impl.SchemeFormLibrary;
-import com.umendes.schemeredux.psi.impl.SchemeSymbolDefine;
+import com.umendes.schemeredux.psi.impl.*;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -22,17 +19,15 @@ public class SchemeStructureViewModel extends StructureViewModelBase implements
     super(file, editor, new SchemeStructureViewElement(file));
   }
 
-  @NotNull
-  public Sorter[] getSorters()
+  public Sorter @NotNull [] getSorters()
   {
     return new Sorter[] { Sorter.ALPHA_SORTER };
   }
 
-  @NotNull
-  protected Class<?>[] getSuitableClasses()
+  protected Class<?> @NotNull [] getSuitableClasses()
   {
     return new Class[] { SchemeFormDefineBase.class,
-            SchemeFormLibrary.class, SchemeFormExport.class, SchemeSymbolDefine.class };
+            SchemeFormLibrary.class, SchemeFormExport.class, SchemeSymbolDefine.class, SchemeDatumLabel.class};
   }
 
   @Override

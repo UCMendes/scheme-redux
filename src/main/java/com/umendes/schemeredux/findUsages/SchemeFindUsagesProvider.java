@@ -33,9 +33,12 @@ public class SchemeFindUsagesProvider implements FindUsagesProvider
   @NotNull
   public String getType(@NotNull PsiElement element)
   {
-    if (element instanceof SchemeSymbol)
-    {
+    if (element instanceof SchemeSymbol) {
       return "symbol";
+
+    } else if (element instanceof SchemeDatumReference) {
+      return "Datum Reference";
+
     }
     return "entity";
   }
