@@ -7,6 +7,10 @@ import com.intellij.psi.tree.IElementType;
 import org.jetbrains.annotations.NotNull;
 import com.umendes.schemeredux.lexer.SchemeTokens;
 
+import java.util.Arrays;
+
+import static com.umendes.schemeredux.parser.SchemeParserWordList.STRS_BUILTIN_PROCEDURE_NUM;
+
 
 public class SchemeParser implements PsiParser, SchemeTokens
 {
@@ -500,6 +504,35 @@ public class SchemeParser implements PsiParser, SchemeTokens
     return eatRemainList(builder, close, form_mark_type);
   }
 
+  IElementType parseFormProcedureNum(PsiBuilder builder, IElementType close)
+  {
+    boolean noNumFlag = false;
+    IElementType token_type = builder.getTokenType();
+    while (token_type != close && token_type != null)
+    {
+      if (!PROCEDURE_NUM.contains(token_type)) {
+        noNumFlag = true;
+      }
+      parseSexp(token_type, builder);
+      token_type = builder.getTokenType();
+    }
+
+    if (builder.getTokenType() != close)
+    {
+      builder.error("Expected '" + close.toString() + "'");
+    }
+    else if (noNumFlag)
+    {
+      builder.error("Expected arguments of type NUM");
+    }
+    else
+    {
+      builder.advanceLexer();
+      return AST.AST_FORM_PROCEDURE_NUM;
+    }
+    return AST.AST_BAD_ELEMENT;
+  }
+
   IElementType parseFormCar(PsiBuilder builder, IElementType close)
   {
     return eatRemainList(builder, close, AST.AST_FORM_CAR);
@@ -582,32 +615,36 @@ public class SchemeParser implements PsiParser, SchemeTokens
 
   IElementType parseTopAndLocalForm(PsiBuilder builder, IElementType close, String text)
   {
+    if (Arrays.asList(STRS_BUILTIN_PROCEDURE_NUM).contains(text)) {
+      return parseFormProcedureNum(builder, close);
+    } else {
       return switch (text) {
-          case "and" -> parseFormAnd(builder, close);
-          case "begin" -> parseFormBegin(builder, close);
-          case "car" -> parseFormCar(builder, close);
-          case "cdr" -> parseFormCdr(builder, close);
-          case "cond" -> parseFormCond(builder, close);
-          case "cons" -> parseFormCons(builder, close);
-          case "define" -> parseFormDefine(builder, close);
-          case "define-record-type" -> parseFormDefineRecordType(builder, close);
-          case "define-syntax" -> parseFormDefineSyntax(builder, close);
-          case "do" -> parseFormDo(builder, close);
-          case "export" -> parseFormExport(builder, close);
-          case "if" -> parseFormIf(builder, close);
-          case "import" -> parseFormImport(builder, close);
-          case "lambda" -> parseFormLambda(builder, close);
-          case "let" -> parseFormLetForms(builder, close, AST.AST_FORM_LET);
-          case "letrec" -> parseFormLetForms(builder, close, AST.AST_FORM_LETREC);
-          case "let*" -> parseFormLetForms(builder, close, AST.AST_FORM_LET_A);
-          case "list" -> parseFormList(builder, close);
-          case "not" -> parseFormNot(builder, close);
-          case "or" -> parseFormOr(builder, close);
-          case "set!" -> parseFormSet(builder, close);
-          case "unless" -> parseFormUnless(builder, close);
-          case "when" -> parseFormWhen(builder, close);
-          default -> null;
+        case "and" -> parseFormAnd(builder, close);
+        case "begin" -> parseFormBegin(builder, close);
+        case "car" -> parseFormCar(builder, close);
+        case "cdr" -> parseFormCdr(builder, close);
+        case "cond" -> parseFormCond(builder, close);
+        case "cons" -> parseFormCons(builder, close);
+        case "define" -> parseFormDefine(builder, close);
+        case "define-record-type" -> parseFormDefineRecordType(builder, close);
+        case "define-syntax" -> parseFormDefineSyntax(builder, close);
+        case "do" -> parseFormDo(builder, close);
+        case "export" -> parseFormExport(builder, close);
+        case "if" -> parseFormIf(builder, close);
+        case "import" -> parseFormImport(builder, close);
+        case "lambda" -> parseFormLambda(builder, close);
+        case "let" -> parseFormLetForms(builder, close, AST.AST_FORM_LET);
+        case "letrec" -> parseFormLetForms(builder, close, AST.AST_FORM_LETREC);
+        case "let*" -> parseFormLetForms(builder, close, AST.AST_FORM_LET_A);
+        case "list" -> parseFormList(builder, close);
+        case "not" -> parseFormNot(builder, close);
+        case "or" -> parseFormOr(builder, close);
+        case "set!" -> parseFormSet(builder, close);
+        case "unless" -> parseFormUnless(builder, close);
+        case "when" -> parseFormWhen(builder, close);
+        default -> null;
       };
+    }
   }
 
   private IElementType parseTopList(PsiBuilder builder, IElementType open, IElementType close)
@@ -783,14 +820,14 @@ public class SchemeParser implements PsiParser, SchemeTokens
       return mark_type;
     }
 
-    if (DATUM_LABEL == type) {
+    if (type == DATUM_LABEL) {
+      PsiBuilder.Marker symbol_marker = builder.mark();
       if (isNotParen(childType)) {
-        PsiBuilder.Marker symbol_marker = builder.mark();
         parseNonParen(builder);
-        symbol_marker.done(AST.AST_DATUM_LABEL_CONTENT);
       } else {
         parseParen(childType, builder);
       }
+      symbol_marker.done(AST.AST_DATUM_LABEL_CONTENT);
       mark_type = AST.AST_DATUM_LABEL;
       marker.done(AST.AST_DATUM_LABEL);
       return mark_type;

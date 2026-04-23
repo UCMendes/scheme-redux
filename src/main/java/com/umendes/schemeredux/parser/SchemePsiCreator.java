@@ -43,6 +43,10 @@ public class SchemePsiCreator
     {
       return new SchemeProcedure(node);
     }
+    else if (elementType == AST.AST_FORM_PROCEDURE_NUM)
+    {
+      return new SchemeProcedureNumber(node);
+    }
     else if (elementType == AST.AST_BASIC_ELE_STR)
     {
       return new SchemeEleString(node);

@@ -56,7 +56,6 @@ public interface SchemeTokens
   IElementType SPECIAL = new SchemeElementType("special");
 
   // Control characters
-    // TokenType = pre-defined tokens, below is just a rename ig
   IElementType WHITESPACE = TokenType.WHITE_SPACE;
   IElementType BAD_CHARACTER = TokenType.BAD_CHARACTER;
 
@@ -71,4 +70,6 @@ public interface SchemeTokens
   TokenSet OPEN_BRACES = TokenSet.create(LEFT_PAREN, LEFT_CURLY, LEFT_SQUARE);
   TokenSet CLOSE_BRACES = TokenSet.create(RIGHT_PAREN, RIGHT_CURLY, RIGHT_SQUARE);
   TokenSet OPEN_SEXP_BRACES = TokenSet.create(LEFT_PAREN, LEFT_SQUARE);
+  TokenSet PROCEDURE_NUM = TokenSet.create(LEFT_PAREN, LEFT_CURLY, LEFT_SQUARE, RIGHT_PAREN, RIGHT_CURLY,
+          RIGHT_SQUARE, NUMBER_LITERAL, NAME_LITERAL, WHITESPACE, KEYWORD, PROCEDURE, DATUM_LABEL, DATUM_REFERENCE);
 }

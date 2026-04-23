@@ -57,8 +57,8 @@ public class SchemeDatumReference extends SchemePsiElementBase implements PsiRef
             if (brother instanceof SchemeDatumLabel datumLabel) {
                 String labelName = datumLabel.toString();
                 String labelSubstring = Objects.requireNonNull(labelName).substring(0, labelName.indexOf("="));
-                System.out.println(labelName);
-                System.out.println(labelSubstring);
+//                System.out.println(labelName);
+//                System.out.println(labelSubstring);
                 if (getFormattedCanonicalText().equals(labelSubstring))
                 {
                     return datumLabel;
