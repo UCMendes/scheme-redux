@@ -4,8 +4,9 @@ package com.umendes.schemeredux.parser;
 // todo Merge with SchemeSpecialWordLIst, for now this is the faster/easier solution
 public class SchemeParserWordList {
 
-    static String[] STRS_SPECIAL_CHAR_NAME = {"alarm", "backspace",
-            "delete", "escape", "newline", "null", "return", "space", "tab"};
+    static String[] STRS_SPECIAL_CHAR_NAME = {
+            "alarm", "backspace", "delete", "escape", "newline",
+            "null", "return", "space", "tab", "x03BB", "iota"};
 
     static String[] STRS_KEYWORD = {
             "quote", "lambda", "if", "set!", "include", "include-ci",

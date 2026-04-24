@@ -3,8 +3,9 @@ package com.umendes.schemeredux.lexer;
 // Class used for keeping keywords/procedure names, in separate file for neatness
 public class SchemeSpecialWordList {
 
-    static String[] STRS_SPECIAL_CHAR_NAME = {"alarm", "backspace",
-            "delete", "escape", "newline", "null", "return", "space", "tab"};
+    static String[] STRS_SPECIAL_CHAR_NAME = {
+            "alarm", "backspace", "delete", "escape", "newline",
+            "null", "return", "space", "tab", "x03BB", "iota"};
 
     static String[] STRS_KEYWORD = {
             "quote", "lambda", "if", "set!", "include", "include-ci",

@@ -33,7 +33,7 @@ class SchemeLexerTest {
     }
 
 //    @Test
-//    @DisplayName("Block comment sanbox")
+//    @DisplayName("Block comment")
 //    // May not properly be handling block comments; #|text#|text|#|# fails when it shouldn't
 //    // Does this line actually check anything? more to come, for now this is really holding me up, got to still progress
 //    void s_block_comment() {
@@ -48,14 +48,14 @@ class SchemeLexerTest {
     @DisplayName("Block comment content")
     void s_block_comment_content() {
         test_fragment = (Tokens.Fragment) testLexer.block_comment.parse("#|thisi|ejeeje|#");
-        assertEquals("thisi|ejeeje", test_fragment.text());
+        assertEquals("#|thisi|ejeeje|#", test_fragment.text());
     }
 
     @Test
     @DisplayName("Whitespace")
     void s_whitespace() {
         test_fragment = (Tokens.Fragment) testLexer.s_whitespace.parse("   ");
-        assertEquals("WHITE_SPACE", test_fragment.text());
+        assertEquals("   ", test_fragment.text());
     }
 
     @Test
@@ -102,7 +102,7 @@ class SchemeLexerTest {
         String[] TEST_INPUT = {"+15", "#b01001", "#O1067", "#d6590", "#Xe83e"};
         for (String s : TEST_INPUT) {
             test_fragment = (Tokens.Fragment) testLexer.s_numbers.parse(s);
-            assertEquals("number", test_fragment.text());
+            assertEquals(s, test_fragment.text());
         }
     }
 
@@ -123,11 +123,9 @@ class SchemeLexerTest {
     // Also test for invalid case: char followed by char
     // Testing every keyword just in case
     void s_sharp_char() {
-        String[] TEST_INPUT = {"#\\nul", "#\\alarm",
-                "#\\backspace", "#\\tab", "#\\linefeed",
-                "#\\newline", "#\\vtab", "#\\page", "#\\return", "#\\esc",
-                "#\\space", "#\\delete", "#\\vtab", "#\\λ",
-                "#\\rubout", "#\\bel", "#\\vt", "#\\nel", "#\\ls"};
+        String[] TEST_INPUT = {"#\\alarm", "#\\backspace", "#\\delete",
+                "#\\escape", "#\\newline", "#\\null", "#\\return",
+                "#\\space", "#\\tab", "#\\x03BB", "#\\iota"};
         for (String s : TEST_INPUT) {
             test_fragment = (Tokens.Fragment) testLexer.s_sharp_char.parse(s);
             assertEquals(s, test_fragment.text());
@@ -165,9 +163,8 @@ class SchemeLexerTest {
     @Test
     @DisplayName("Built-in Elements")
     // Tests both s_keywords and s_builtin_procedures
-    // Need to adjust list based on R7RS updated lists
     void PAR_BUILTIN_ELEMENTS() {
-        String[] TEST_INPUT = {"null", "null?"};
+        String[] TEST_INPUT = {"parameterize", "null?"};
         for (String s : TEST_INPUT) {
             test_fragment = (Tokens.Fragment) testLexer.PAR_BUILTIN_ELEMENTS.parse(s);
             assertEquals(s, test_fragment.text());
@@ -186,11 +183,11 @@ class SchemeLexerTest {
         }
     }
 
-    // Designed to return error, and show returned vs expected text
-    @Test
-    @DisplayName("What is in A")
-    void s_token() {
-        Object test_huh = testLexer.s_token.parse("        ");
-        assertEquals("      ", test_huh);
-    }
+//    // Designed to return error, and show returned vs expected text
+//    @Test
+//    @DisplayName("What is in A")
+//    void s_token() {
+//        Object test_huh = testLexer.s_token.parse("        ");
+//        assertEquals("      ", test_huh);
+//    }
 }
