@@ -12,14 +12,13 @@ import com.umendes.schemeredux.SchemeLanguage;
 public class SchemeCodeStyleSettingsProvider extends CodeStyleSettingsProvider
 {
   @Override
-  @NotNull
-  public Configurable createSettingsPage(CodeStyleSettings settings, CodeStyleSettings originalSettings)
+  public Configurable createSettingsPage(@NotNull CodeStyleSettings settings, @NotNull CodeStyleSettings originalSettings)
   {
     return new SchemeFormatConfigurable(settings, originalSettings);
   }
 
   @Override
-  public CustomCodeStyleSettings createCustomSettings(CodeStyleSettings settings)
+  public CustomCodeStyleSettings createCustomSettings(@NotNull CodeStyleSettings settings)
   {
     return new SchemeCodeStyleSettings(settings);
   }

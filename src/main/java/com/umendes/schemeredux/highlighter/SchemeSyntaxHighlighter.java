@@ -20,7 +20,7 @@ import static com.intellij.openapi.editor.colors.TextAttributesKey.createTextAtt
 
 public class SchemeSyntaxHighlighter extends SyntaxHighlighterBase implements SchemeTokens
 {
-  private static final Map<IElementType, TextAttributesKey[]> ATTRIBUTES = new HashMap<IElementType, TextAttributesKey[]>();
+  private static final Map<IElementType, TextAttributesKey[]> ATTRIBUTES = new HashMap<>();
 
   @NotNull
   public Lexer getHighlightingLexer()

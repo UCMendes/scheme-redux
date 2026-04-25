@@ -118,8 +118,7 @@ public class SchemeIdentifier extends SchemePsiElementBase implements PsiReferen
         return name == null ? "<undefined>" : name;
       }
 
-      @Nullable
-      public String getLocationString()
+      public @NotNull String getLocationString()
       {
         String name = getContainingFile().getName();
         //todo show namespace
@@ -185,12 +184,12 @@ public class SchemeIdentifier extends SchemePsiElementBase implements PsiReferen
     }
   }
 
-  public String getCanonicalText()
+  public @NotNull String getCanonicalText()
   {
-    return null;
+    return getText();
   }
 
-  public PsiElement handleElementRename(String newElementName) throws IncorrectOperationException
+  public PsiElement handleElementRename(@NotNull String newElementName) throws IncorrectOperationException
   {
     PsiElement nameElement = getReferenceNameElement();
     if (nameElement != null)
@@ -209,11 +208,10 @@ public class SchemeIdentifier extends SchemePsiElementBase implements PsiReferen
     return this;
   }
 
-  public boolean isReferenceTo(PsiElement element)
+  public boolean isReferenceTo(@NotNull PsiElement element)
   {
-    if (element instanceof SchemeIdentifier)
+    if (element instanceof SchemeIdentifier identifier)
     {
-      SchemeIdentifier identifier = (SchemeIdentifier) element;
       String referenceName = getReferenceName();
       if ((referenceName != null) && referenceName.equals(identifier.getReferenceName()))
       {
@@ -223,8 +221,7 @@ public class SchemeIdentifier extends SchemePsiElementBase implements PsiReferen
     return false;
   }
 
-  @NotNull
-  public Object[] getVariants()
+  public Object @NotNull [] getVariants()
   {
     return CompleteSymbol.getVariants(this);
   }

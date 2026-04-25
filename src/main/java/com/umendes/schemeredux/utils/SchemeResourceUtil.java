@@ -29,8 +29,7 @@ public class SchemeResourceUtil {
                     buffer.write(data, 0, nRead);
                 }
                 buffer.flush();
-                byte[] contentBytes = buffer.toByteArray();
-                return new String(contentBytes, StandardCharsets.UTF_8);
+                return buffer.toString(StandardCharsets.UTF_8);
             }
         } catch (IOException ignored) {
         }

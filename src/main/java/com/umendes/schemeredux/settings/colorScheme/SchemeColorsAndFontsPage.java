@@ -113,7 +113,7 @@ public class SchemeColorsAndFontsPage implements ColorSettingsPage
   @Nullable
   public Map<String, TextAttributesKey> getAdditionalHighlightingTagToDescriptorMap()
   {
-    Map<String, TextAttributesKey> map = new HashMap<String, TextAttributesKey>();
+    Map<String, TextAttributesKey> map = new HashMap<>();
     map.put("def", syntaxHighlighter.IDENTIFIER);
     return map;
   }

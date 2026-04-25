@@ -28,9 +28,4 @@ public class SchemeFormattingModelBuilder implements FormattingModelBuilder
     return FormattingModelProvider.createFormattingModelForPsiFile(containingFile, schemeBlock, settings);
   }
 
-  @Nullable
-  public TextRange getRangeAffectingIndent(PsiFile file, int offset, ASTNode elementAtOffset)
-  {
-    return null;
-  }
 }

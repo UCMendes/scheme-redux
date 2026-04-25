@@ -144,7 +144,7 @@ public class SchemePsiCreator
     else if (elementType == AST.AST_FORM_LET)
     {
       SchemeFormLet form = new SchemeFormLet(node);
-//      setupLetForm(form);
+      // setupLetForm(form);
       return form;
     }
     else if (elementType == AST.AST_FORM_LET_A)
@@ -174,7 +174,7 @@ public class SchemePsiCreator
     else if (elementType == AST.AST_FORM_PROCEDURE)
     {
       SchemeFormProcedure form = new SchemeFormProcedure(node);
-//      setupProcedure(form);
+      // setupProcedure(form);
       return form;
     }
     else if (elementType == AST.AST_FORM_QUASIQUOTE)

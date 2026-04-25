@@ -18,14 +18,12 @@ public class SchemeSpacingProcessor
 
   public static Spacing getSpacing(Block child1, Block child2)
   {
-    if (!(child1 instanceof SchemeBlock) || !(child2 instanceof SchemeBlock))
+    if (!(child1 instanceof SchemeBlock block1) || !(child2 instanceof SchemeBlock block2))
     {
       return null;
     }
-    SchemeBlock block1 = (SchemeBlock) child1;
-    SchemeBlock block2 = (SchemeBlock) child2;
 
-    ASTNode node1 = block1.getNode();
+      ASTNode node1 = block1.getNode();
     ASTNode node2 = block2.getNode();
 
     return getSpacingForAST(node1, node2);

@@ -29,15 +29,14 @@ public class SchemeFoldingBuilder implements FoldingBuilder
     }
   }
 
-  @NotNull
-  public FoldingDescriptor[] buildFoldRegions(@NotNull ASTNode rootNode, @NotNull Document document)
+  public FoldingDescriptor @NotNull [] buildFoldRegions(@NotNull ASTNode rootNode, @NotNull Document document)
   {
     List<FoldingDescriptor> descriptors = new ArrayList<>();
     appendDescriptors(rootNode, descriptors);
     return descriptors.toArray(new FoldingDescriptor[0]);
   }
 
-  public boolean isCollapsedByDefault(ASTNode node)
+  public boolean isCollapsedByDefault(@NotNull ASTNode node)
   {
       return false;
   }
