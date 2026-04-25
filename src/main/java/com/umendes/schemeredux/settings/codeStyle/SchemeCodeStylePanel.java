@@ -16,7 +16,7 @@ public class SchemeCodeStylePanel extends TabbedLanguageCodeStylePanel
   @Override
   protected void initTabs(CodeStyleSettings settings) {
     super.initTabs(settings);
-    for (CodeStyleSettingsProvider provider : Extensions.getExtensions(CodeStyleSettingsProvider.EXTENSION_POINT_NAME)) {
+    for (CodeStyleSettingsProvider provider : CodeStyleSettingsProvider.EXTENSION_POINT_NAME.getExtensionList()) {
       if (provider.getLanguage() == SchemeLanguage.INSTANCE && !provider.hasSettingsPage()) {
         createTab(provider);
       }

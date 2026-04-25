@@ -99,7 +99,7 @@ class SchemeLexerTest {
     @Test
     @DisplayName("Numbers")
     void s_numbers() {
-        String[] TEST_INPUT = {"+15", "#b01 001", "#O1067", "#d6590", "#Xe83e"};
+        String[] TEST_INPUT = {"+15", "#b01001", "#O1067", "#d6590", "#Xe83e"};
         for (String s : TEST_INPUT) {
             test_fragment = (Tokens.Fragment) testLexer.s_numbers.parse(s);
             assertEquals(s, test_fragment.text());

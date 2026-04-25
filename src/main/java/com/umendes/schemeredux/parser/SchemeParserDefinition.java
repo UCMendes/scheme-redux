@@ -63,7 +63,7 @@ public class SchemeParserDefinition implements ParserDefinition
   }
 
   @NotNull
-  public SpaceRequirements spaceExistanceTypeBetweenTokens(ASTNode left, ASTNode right)
+  public SpaceRequirements spaceExistenceTypeBetweenTokens(ASTNode left, ASTNode right)
   {
     if (SchemeTokens.DATUM_PREFIXES.contains(left.getElementType()))
     {

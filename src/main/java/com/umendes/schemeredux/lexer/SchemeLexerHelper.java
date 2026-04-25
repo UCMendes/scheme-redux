@@ -50,7 +50,8 @@ public class SchemeLexerHelper {
 
     // Adapted from jparsec
     // Sort array of strings by the longer string first
-    private static final Comparator<String> LONGER_STRING_FIRST = (a, b) -> b.length() - a.length();
+    // Current function sorts as if there are no equal elements
+    private static final Comparator<String> LONGER_STRING_FIRST = (a, b) -> (b.length() - a.length() < 0 ? -1 : 1);
     public static List<String> terminalSort(String[] names) {
         Arrays.sort(names, LONGER_STRING_FIRST);
         return List.of(names);

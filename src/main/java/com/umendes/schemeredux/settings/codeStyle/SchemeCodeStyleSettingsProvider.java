@@ -1,7 +1,7 @@
 package com.umendes.schemeredux.settings.codeStyle;
 
 import com.intellij.lang.Language;
-import com.intellij.openapi.options.Configurable;
+import com.intellij.psi.codeStyle.CodeStyleConfigurable;
 import com.intellij.psi.codeStyle.CodeStyleSettingsProvider;
 import com.intellij.psi.codeStyle.CodeStyleSettings;
 import com.intellij.psi.codeStyle.CustomCodeStyleSettings;
@@ -12,7 +12,8 @@ import com.umendes.schemeredux.SchemeLanguage;
 public class SchemeCodeStyleSettingsProvider extends CodeStyleSettingsProvider
 {
   @Override
-  public Configurable createSettingsPage(@NotNull CodeStyleSettings settings, @NotNull CodeStyleSettings originalSettings)
+  public @NotNull CodeStyleConfigurable createConfigurable(
+          @NotNull CodeStyleSettings settings, @NotNull CodeStyleSettings originalSettings)
   {
     return new SchemeFormatConfigurable(settings, originalSettings);
   }
