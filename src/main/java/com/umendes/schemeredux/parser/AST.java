@@ -26,7 +26,7 @@ public interface AST
   IElementType AST_ELE_DATUM_COMMENT = new SchemeElementType("ast datum comment");
 
   // Forms
-  // (form means procedure/keyword)
+  // (form = procedure/keyword)
   IElementType AST_IN_FORM_BODY = new SchemeElementType("ast body of form");
   IElementType AST_IN_FORM_PARAM_LIST = new SchemeElementType("ast parameter list of form");
   IElementType AST_IN_FORM_PARAM_LIST_LET_INNER = new SchemeElementType("ast inner parameter list of let form");

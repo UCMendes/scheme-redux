@@ -136,7 +136,6 @@ public class SchemePsiUtil
     return null;
   }
 
-  // Recursive function, to backtrack until a parent is found
   public static PsiElement getBigBrother(PsiElement element)
   {
     if (element == null)
@@ -144,7 +143,6 @@ public class SchemePsiUtil
       return null;
     }
     PsiElement bigBrother;
-    // get the older sibling of this element and return if it exists
     bigBrother = element.getPrevSibling();
     if (bigBrother != null)
     {

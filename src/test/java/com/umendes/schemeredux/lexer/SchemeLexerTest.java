@@ -35,7 +35,7 @@ class SchemeLexerTest {
 //    @Test
 //    @DisplayName("Block comment")
 //    // May not properly be handling block comments; #|text#|text|#|# fails when it shouldn't
-//    // Does this line actually check anything? more to come, for now this is really holding me up, got to still progress
+//    // Will implement proper nesting at a later date
 //    void s_block_comment() {
 //        Parser<String> content_check = Parser.anyOf(consecutive(isNot('|'), "|"), string("|").notFollowedBy("#"))
 //                .zeroOrMore(joining())
@@ -67,7 +67,6 @@ class SchemeLexerTest {
 
     @Test
     @DisplayName("Open vector character")
-    // Needs to be changed to comply with R7RS
     void s_op_open_vector() {
         test_fragment = (Tokens.Fragment) testLexer.s_op_open_vector.parse("#u8(");
         assertEquals("#u8(", test_fragment.text());
@@ -120,7 +119,6 @@ class SchemeLexerTest {
 
     @Test
     @DisplayName("Characters")
-    // Also test for invalid case: char followed by char
     // Testing every keyword just in case
     void s_sharp_char() {
         String[] TEST_INPUT = {"#\\alarm", "#\\backspace", "#\\delete",

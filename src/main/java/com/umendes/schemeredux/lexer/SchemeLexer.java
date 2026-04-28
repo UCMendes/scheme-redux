@@ -65,7 +65,7 @@ public class SchemeLexer extends LexerBase
   Parser<?> s_line_comment = SCA_LINE_COMMENT.source()
           .map((a) -> (Tokens.fragment(a, Tag.TAG_LINE_COMMENT)));
 
-  // The commented must not be '#', or if it's '|', must not be followed by '#'
+  // The commented text must not be '#', or if it's '|', must not be followed by '#'
   Parser<String> SCA_BLOCK_COMMENT_CONTENT = anyOf(
           consecutive(isNot('|'), "|"),
           string("|").notFollowedBy("#"));
@@ -84,7 +84,7 @@ public class SchemeLexer extends LexerBase
   Parser<?> s_op_single_char = single(CharPredicate.anyOf("()[]'`,"), "operator").source()
           .map((a) -> (Tokens.fragment(a, Tag.TAG_OP_SINGLE_CHAR)));
 
-  // #vu8( does not exist in R7RS, adjusting to suit new specification
+  // Vector/Abbreviation
   Parser<?> s_op_open_vector = anyOf(string("#("), string("#u8("))
           .source().map((a) -> (Tokens.fragment(a, Tag.TAG_OP_OPEN_VECTOR)));
   Parser<?> s_op_abbreviations = multiword(terminalSort(new String[]{",@", "#'", "#`", "#,@", "#,"})).source()
@@ -201,12 +201,13 @@ Parser<Object> s_token = PAR_TOKEN
             if (null != a) {
 //              System.out.println("a: " + a);
               if (a.getClass() == Tokens.Fragment.class) {
-                // If this is a valid token, get its type and text, else do the other stuff
-                // Also, set global variable token-frag to token fragment a for later sorting
+                // If this is a valid token, get its type and text, else reject
+                // Also, set global variable token-frag to current token fragment a for later sorting
                 token_frag = (Tokens.Fragment)a;
                 token_length = ((Tokens.Fragment)a).text().length();
 
-//                // For testing
+//                // For testing:
+                  // Lexer output is printed to LexerTestDotParse, allowing for easier analysis/comparison
 //                System.out.println("type: " + ((Tokens.Fragment)a).tag().toString());
 //                System.out.println("text: " + ((Tokens.Fragment)a).text());
 //
@@ -230,15 +231,14 @@ Parser<Object> s_token = PAR_TOKEN
           });
 
   @Override
-  // The values that go in these are probably determined by intellij?
   public void start(@NotNull CharSequence buffer, int startOffset, int endOffset, int initialState)
   {
 //    System.out.println("startOffset: " + startOffset + ", endOffset: " + endOffset
 //            + ". initialState: " + initialState);
 
     this.buffer = buffer;
-    this.lex_start_pos = startOffset; // Back pointer
-    this.lexed_end_pos = startOffset; // Forward pointer
+    this.lex_start_pos = startOffset;
+    this.lexed_end_pos = startOffset;
     this.bufferEnd = endOffset;
     this.token_frag = null;
     decodeState(initialState);
@@ -248,7 +248,6 @@ Parser<Object> s_token = PAR_TOKEN
   int cur_token_start = 0;
   int cur_token_end = 0;
 
-  //Buffer = word to parse
   @Override
   public void advance()
   // Stop parsing if end of buffer (file)
@@ -259,7 +258,6 @@ Parser<Object> s_token = PAR_TOKEN
       return;
     }
 
-    // Same but bring back pointer to forward pointer first
     this.token_frag = null;
     if (lexed_end_pos >= bufferEnd)
     {
@@ -286,14 +284,12 @@ Parser<Object> s_token = PAR_TOKEN
       }
     }
 
-    // move forward pointer up
     lexed_end_pos = lex_start_pos + token_length;
     if (lexed_end_pos > bufferEnd) {
       lexed_end_pos = bufferEnd;
     }
     cur_token_end = lexed_end_pos;
 
-    // Identify specific lexeme and sent to intellij
     switch ((Tag)token_frag.tag()) {
 
       case TAG_LINE_COMMENT:

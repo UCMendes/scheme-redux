@@ -1,9 +1,10 @@
-;; Line Comment !$%&*+-./:<=>?@^_~ line comment
+;; Line Comment
+;; errors are intentional
+
 #|
   Multiline
-  | Comment
+  Comment
 |#
-
 
 "String\r\n"
 
@@ -13,11 +14,15 @@
 
 (define char #\c)
 
-(define special #\nul)
+(define special #\null)
 
-(eq? 1 2)
+(eq? char special)
 
-#t #F
+(/ 8 9)
+
+#t #f #true #false
+
+(let ((x (#5435=(a b) #5435#))) (eq? (car x) (cadr x)))
 
 '(eq? 1 2)
 `(list ,(eq? 1 2) ,@(eq? 1 2))
@@ -34,7 +39,7 @@
   ((= i 5) vec)
   (vector-set! vec i i))
 
-(let loop ((numbers '(#b101 -2 1 6 -5))
+(let loop ((numbers '(3 -2 1 6 -5))
             (nonneg '())
             (neg '()))
   (cond ((null? numbers) (list nonneg neg))
@@ -47,14 +52,8 @@
         nonneg
         (cons (car numbers) neg)))))
 
-(let-syntax ((when (syntax-rules ()
-                     ((when test stmt1 stmt2 ...)
-                       (if test
-                         (begin stmt1
-                                stmt2 ...))))))
-  (let ((if #t))
-    (when if (set! if 'now))
-    if))
+(let-syntax ((given-that (syntax-rules () ((given-that test stmt1 stmt2 ...) (if test (begin stmt1 stmt2 ...))))))
+  (let ((if #t)) (given-that if (set! if 'now)) if))
 
 (let ((x 'outer))
   (let-syntax ((m (syntax-rules () ((m) x))))

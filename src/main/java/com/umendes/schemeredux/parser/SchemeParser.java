@@ -4,8 +4,10 @@ import com.intellij.lang.ASTNode;
 import com.intellij.lang.PsiBuilder;
 import com.intellij.lang.PsiParser;
 import com.intellij.psi.tree.IElementType;
+import org.jetbrains.annotations.NonNls;
 import org.jetbrains.annotations.NotNull;
 import com.umendes.schemeredux.lexer.SchemeTokens;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Arrays;
 import java.util.Objects;
@@ -29,6 +31,7 @@ public class SchemeParser implements PsiParser, SchemeTokens
     return theAst;
   }
 
+  // Print logging procedure, use where needed
   public void report_status(PsiBuilder builder, String debugString) {
       System.out.println("token type: " + builder.getTokenType() + ", token text: "
               + builder.getTokenText() + ", debug string: " + debugString);
@@ -209,11 +212,13 @@ public class SchemeParser implements PsiParser, SchemeTokens
         IElementType token_type = builder.getTokenType();
         if (token_type == NAME_LITERAL && Objects.equals(builder.getTokenText(), bindingName)) {
             markAToken(builder, AST.AST_BASIC_ELE_SYMBOL);
+            token_type = builder.getTokenType();
             while (token_type != close && token_type != null)
             {
                 if (token_type == NAME_LITERAL) {
                     markAToken(builder, AST.AST_BASIC_ELE_SYMBOL_DEFINE);
                 } else if (token_type == KEYWORD && Objects.equals(builder.getTokenText(), "...")) {
+                    builder.remapCurrentToken(NAME_LITERAL);
                     markAToken(builder, AST.AST_BASIC_ELE_SYMBOL_DEFINE);
                 } else {
                     builder.error("Expected name literal or elipses");
@@ -245,14 +250,12 @@ public class SchemeParser implements PsiParser, SchemeTokens
         helperListAdvance(builder, close, 0);
         IElementType mark_type = AST.AST_BAD_ELEMENT;
         IElementType token_type = builder.getTokenType();
-        report_status(builder, "looking for ()");
 
         // To cover "()"
         if (OPEN_SEXP_BRACES.contains(token_type)) {
             IElementType list_close = getCloseParen(token_type);
             builder.advanceLexer();
             token_type = builder.getTokenType();
-            report_status(builder, "( passed, looking for )");
             if (token_type == list_close) {
 
                 builder.advanceLexer();
@@ -288,13 +291,14 @@ public class SchemeParser implements PsiParser, SchemeTokens
     if (builder.getTokenType() == NAME_LITERAL) {
       markAToken(builder, AST.AST_BASIC_ELE_SYMBOL_DEFINE);
     }
+    // System.out.println(let_type);
     helperListAdvance(builder, close, 0);
     IElementType token_type = builder.getTokenType();
 
-    // Because let has that double bracket thing, "("(x 3), (y 2)")"
-    // this line is for the inside bracket
+    // The following bracket checks are for the double brackets
+    // Before first binding is reached
     if (OPEN_SEXP_BRACES.contains(token_type)) {
-        // this will mark the list of bindings
+      // this will mark the list of bindings
       PsiBuilder.Marker listMarker = builder.mark();
       IElementType list_close = getCloseParen(token_type);
       IElementType sub_list_token_type;
@@ -303,9 +307,8 @@ public class SchemeParser implements PsiParser, SchemeTokens
       sub_list_token_type = builder.getTokenType();
       while (sub_list_token_type != null && sub_list_token_type != list_close) {
 
-        // if this is the beginning of a list, ("("x 3), (y 2))
         if (OPEN_SEXP_BRACES.contains(sub_list_token_type)) {
-            // this will mark the contents of this specific binding
+          // this will mark the contents of this specific binding
           PsiBuilder.Marker subListMarker = builder.mark();
           IElementType sub_list_close = getCloseParen(sub_list_token_type);
           builder.advanceLexer();
@@ -313,8 +316,9 @@ public class SchemeParser implements PsiParser, SchemeTokens
           IElementType name_token_type = builder.getTokenType();
 
           if (name_token_type == NAME_LITERAL) {
-            // To ensure that name is present in syntax-rules
+            // To ensure that name is present in syntax-rules, get the binding name
             String bindName = builder.getTokenText();
+            // System.out.println("Binding name: " + bindName);
             markAToken(builder, AST.AST_BASIC_ELE_SYMBOL_DEFINE);
 
             if (let_type == AST.AST_FORM_LET_SYNTAX) {
@@ -325,8 +329,8 @@ public class SchemeParser implements PsiParser, SchemeTokens
                     builder.advanceLexer();
 
                     if (Objects.equals(builder.getTokenText(), "syntax-rules")) {
-                        //, followed by the next "syntax-rules"
-                        report_status(builder, "syntax-rules correctly identified");
+                        //, followed by the text "syntax-rules"
+                        // report_status(builder, "syntax-rules correctly identified");
                         builder.advanceLexer();
                         syntaxTransformer.done(eatRemainTransformer(builder, bindName, sub_list_close, AST.AST_LET_SYNTAX_TRANSFORM));
                         subListMarker.done(eatRemainList(builder, sub_list_close, AST.AST_IN_FORM_PARAM_LIST_LET_INNER));
@@ -368,7 +372,6 @@ public class SchemeParser implements PsiParser, SchemeTokens
     } else if (token_type != close) {
       markAToken(builder, AST.AST_BAD_ELEMENT);
     }
-
     if (helperListAdvance(builder, close, 0)) {
       PsiBuilder.Marker bodyMarker = builder.mark();
       helperEatFormBody(builder, close, bodyMarker);
@@ -890,8 +893,8 @@ public class SchemeParser implements PsiParser, SchemeTokens
 
   IElementType parseAtom(PsiBuilder builder)
   {
-    // Surround this section with a marker , move lexer forward by one, and inspect next token
-    // When done, label this marker with the element type found
+    // Surround this section with a marker, move lexer forward by one token, and inspect token seen
+    // When done, label this marker with the token type found
     IElementType type = builder.getTokenType();
     PsiBuilder.Marker marker = builder.mark();
     builder.advanceLexer();
@@ -902,11 +905,11 @@ public class SchemeParser implements PsiParser, SchemeTokens
 
   IElementType parsePrefixOrLabel(PsiBuilder builder)
   {
-    IElementType type = builder.getTokenType(); // DATUM_LABEL
+    IElementType type = builder.getTokenType();
     PsiBuilder.Marker marker = builder.mark();
     builder.advanceLexer();
     // What follows this prefix?
-    IElementType childType = builder.getTokenType(); // DATUM_REFERENCE? for example
+    IElementType childType = builder.getTokenType();
     IElementType mark_type;
 
     // If nothing follows the prefix:
@@ -919,7 +922,7 @@ public class SchemeParser implements PsiParser, SchemeTokens
       return null;
     }
 
-    // Parse the child, and treat it as a datum_comment?
+    // Parse the child, and treat it as a datum_comment
     if (DATUM_COMMENT_PRE == type) {
       parseSexp(childType, builder);
       mark_type = SchemeTokens.DATUM_COMMENT;

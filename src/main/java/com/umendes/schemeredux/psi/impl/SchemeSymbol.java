@@ -112,7 +112,6 @@ public class SchemeSymbol extends SchemePsiElementBase implements PsiReference
 
   public boolean isReferenceTo(@NotNull PsiElement element)
   {
-    // System.out.println("Did you manage to get here? (symbol is reference to) good");
     if (element instanceof SchemeSymbolDefine symbol)
     {
       String referenceName = getReferenceName();
@@ -141,7 +140,6 @@ public class SchemeSymbol extends SchemePsiElementBase implements PsiReference
 
   public PsiElement resolve()
   {
-    //  System.out.println("Did you manage to get here? (symbol resolve) good");
     PsiElement brother;
     brother = this.getPrevSibling();
     while (brother != null)

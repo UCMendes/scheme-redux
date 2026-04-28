@@ -2,7 +2,7 @@
 <idea-plugin>
     <id>com.umendes.scheme-redux.scheme-redux</id>
     <name>Scheme-Redux</name>
-    <vendor url="https://github.com/UCMendes">My Github</vendor>
+    <vendor url="https://github.com/UCMendes">UCMendes</vendor>
     <description>Updated plugin for supporting the Scheme programming language</description>
     <depends>com.intellij.modules.lang</depends>
     <depends>com.intellij.modules.platform</depends>

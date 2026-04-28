@@ -1,6 +1,7 @@
 package com.umendes.schemeredux.lexer;
 
 // Class used for keeping keywords/procedure names, in separate file for neatness
+// Words present here are based on the base list provided by the R7RS report
 public class SchemeSpecialWordList {
 
     static String[] STRS_SPECIAL_CHAR_NAME = {
