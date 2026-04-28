@@ -1,6 +1,6 @@
-# Scheme-redux: Up-to-date plugin for scheme development on Intellij 
+# Scheme-redux: Up-to-date plugin for scheme development on IntelliJ 
 
-A final year project based around updating and improving the overall capabilities of intellij-scheme, a plugin for Intellij IDEA created to support editing in the scheme programming language.
+A final year project based around updating and improving the overall capabilities of intellij-scheme, a plugin for IntelliJ IDEA created to support editing in the Scheme programming language.
 
 This project and code is heavily based on the work of the following repositories:
 - [saigut/intellij-scheme](https://github.com/Saigut/intellij-scheme)
@@ -16,21 +16,21 @@ Additional libraries used:
 ## Major differences from intellij-scheme
 
 ### New build system
-- Plugin has been migrated to the gradle build system
-- Because of this, library files are no longer bound to the project (and will be fetched by gradle instead)
+- Plugin has been migrated to the Gradle build tool
+- Because of this, library files are no longer bound to the project (and will be fetched by Gradle instead)
 
 ### Reworked lexer
 - SchemeLexer.java now uses the **dot-parse** library for parsing, instead of jparsec (except in specific cases)
 - Helper functions created to support lexer operations (and to tidy code)
-- recognised procedure/keyword/character names have been updated to match base library (as described in [R7RS](https://standards.scheme.org/unofficial/errata-corrected-r7rs.pdf))
+- Recognised procedure/keyword/character names have been updated to match base library (as described in [R7RS](https://standards.scheme.org/unofficial/errata-corrected-r7rs.pdf))
 
 ### New syntax construct, Datum Label
 - Datum label (#X=) and Datum reference (#X#) now recognised as syntax, to be read by lexer and marked by parser.
 - If a label and a reference have the same "X", a datum reference will act as an in-editor reference to a datum label (Ctrl+B)
 
-### Improved compehension of existing syntax/functions
-- procedures that only accept numbers as arguments now notify of error if those arguments are of an incorrect type
-- keywords "let-syntax" and "syntax-rules" now interpreted as a sum of their individual parts (binder/transformer/syntax rule), complete with input validation and symbol referencing where possible  
+### Improved comprehension of existing syntax/functions
+- Procedures that only accept numbers as arguments now notify of error if those arguments are of an incorrect type
+- Keywords "let-syntax" and "syntax-rules" now interpreted as a sum of their individual parts (binder/transformer/syntax rule), complete with input validation and symbol referencing where possible  
 
 ### Other fixes
 - Deprecated procedure calls replaced where possible
@@ -50,12 +50,12 @@ Additional libraries used:
 
 ## To Run
 
-> As this plugin was made to support the Intellij IDE, you will need to have it installed in order to use this plugin.
+> As this plugin was made to support the IntelliJ IDEA, you will need to have it installed in order to use this plugin.
 
 1. Download and unzip the project zip from the repository front page.
-2. In Intellij, navigate to File > New > Project from existing sources
+2. In IntelliJ, navigate to File > New > Project from existing sources
 3. Navigate to **build.gradle.kts** and select open
-4. Wait for the gradle project to finish importing (may take up to 15 minutes)
+4. Wait for the Gradle project to finish importing (may take up to 15 minutes)
 5. Press "Run IDE with Plugin", create a new project, and create a file within that project with file extension ".scm"
 6. Start typing!
 
