@@ -155,6 +155,22 @@ public class SchemePsiCreator
     {
       return new SchemeFormLetrec(node);
     }
+    else if (elementType == AST.AST_FORM_LET_SYNTAX)
+    {
+        return new SchemeFormLetSyntax(node);
+    }
+    else if (elementType == AST.AST_LET_SYNTAX_TRANSFORM)
+    {
+        return new SchemeFormLetSyntaxTransformer(node);
+    }
+    else if (elementType == AST.AST_SYNTAX_RULE)
+    {
+        return new SchemeFormSyntaxRule(node);
+    }
+    else if (elementType == AST.AST_SYNTAX_RULE_PATTERN)
+    {
+        return new SchemeFormSyntaxRulePattern(node);
+    }
     else if (elementType == AST.AST_FORM_LIBRARY)
     {
       return new SchemeFormLibrary(node);

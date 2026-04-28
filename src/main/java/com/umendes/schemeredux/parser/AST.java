@@ -36,6 +36,10 @@ public interface AST
   IElementType AST_FORM_PROCEDURE = new SchemeElementType("ast procedure");   // lambda
   IElementType AST_FORM_CALL_PROCEDURE = new SchemeElementType("ast call procedure");
   IElementType AST_FORM_LET = new SchemeElementType("ast let");
+  IElementType AST_FORM_LET_SYNTAX = new SchemeElementType("ast let-syntax");
+  IElementType AST_LET_SYNTAX_TRANSFORM = new SchemeElementType("ast let-syntax transformer");
+  IElementType AST_SYNTAX_RULE = new SchemeElementType("ast syntax-rules");
+  IElementType AST_SYNTAX_RULE_PATTERN = new SchemeElementType("ast syntax-rules pattern");
   IElementType AST_FORM_LET_A = new SchemeElementType("ast let*");
   IElementType AST_FORM_LETREC = new SchemeElementType("ast letrec");
   IElementType AST_FORM_SET = new SchemeElementType("ast set");

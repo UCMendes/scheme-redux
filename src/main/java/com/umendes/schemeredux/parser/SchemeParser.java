@@ -8,6 +8,7 @@ import org.jetbrains.annotations.NotNull;
 import com.umendes.schemeredux.lexer.SchemeTokens;
 
 import java.util.Arrays;
+import java.util.Objects;
 
 import static com.umendes.schemeredux.parser.SchemeParserWordList.STRS_BUILTIN_PROCEDURE_NUM;
 
@@ -26,6 +27,11 @@ public class SchemeParser implements PsiParser, SchemeTokens
 //    printAstTree(theAst);
 
     return theAst;
+  }
+
+  public void report_status(PsiBuilder builder, String debugString) {
+      System.out.println("token type: " + builder.getTokenType() + ", token text: "
+              + builder.getTokenText() + ", debug string: " + debugString);
   }
 
   ASTNode do_parse(PsiBuilder builder)
@@ -196,6 +202,87 @@ public class SchemeParser implements PsiParser, SchemeTokens
     bodyMarker.done(AST.AST_IN_FORM_BODY);
   }
 
+    // New Main logic
+    IElementType eatPatternList(PsiBuilder builder, String bindingName, IElementType close)
+    {
+        IElementType mark_type;
+        IElementType token_type = builder.getTokenType();
+        if (token_type == NAME_LITERAL && Objects.equals(builder.getTokenText(), bindingName)) {
+            markAToken(builder, AST.AST_BASIC_ELE_SYMBOL);
+            while (token_type != close && token_type != null)
+            {
+                if (token_type == NAME_LITERAL) {
+                    markAToken(builder, AST.AST_BASIC_ELE_SYMBOL_DEFINE);
+                } else if (token_type == KEYWORD && Objects.equals(builder.getTokenText(), "...")) {
+                    markAToken(builder, AST.AST_BASIC_ELE_SYMBOL_DEFINE);
+                } else {
+                    builder.error("Expected name literal or elipses");
+                    markAToken(builder, AST.AST_BAD_ELEMENT);
+                }
+                token_type = builder.getTokenType();
+            }
+        } else {
+            builder.error("Expected binding name.");
+            return eatRemainList(builder, close, AST.AST_BAD_ELEMENT);
+        }
+
+        if (builder.getTokenType() != close)
+        {
+            builder.error("Expected '" + close.toString() + "'");
+            mark_type = AST.AST_BAD_ELEMENT;
+        }
+        else
+        {
+            builder.advanceLexer();
+            mark_type = AST.AST_SYNTAX_RULE_PATTERN;
+        }
+
+        return mark_type;
+    }
+
+    IElementType eatRemainTransformer(PsiBuilder builder, String bindingName, IElementType close, IElementType success_type)
+    {
+        helperListAdvance(builder, close, 0);
+        IElementType mark_type = AST.AST_BAD_ELEMENT;
+        IElementType token_type = builder.getTokenType();
+        report_status(builder, "looking for ()");
+
+        // To cover "()"
+        if (OPEN_SEXP_BRACES.contains(token_type)) {
+            IElementType list_close = getCloseParen(token_type);
+            builder.advanceLexer();
+            token_type = builder.getTokenType();
+            report_status(builder, "( passed, looking for )");
+            if (token_type == list_close) {
+
+                builder.advanceLexer();
+                token_type = builder.getTokenType();
+                if (OPEN_SEXP_BRACES.contains(token_type)) {
+                    PsiBuilder.Marker syntaxRule = builder.mark();
+                    IElementType syntax_rule_list_close = getCloseParen(token_type);
+                    builder.advanceLexer();
+                    token_type = builder.getTokenType();
+                    if (OPEN_SEXP_BRACES.contains(token_type)) {
+                        PsiBuilder.Marker patternList = builder.mark();
+                        builder.advanceLexer();
+                        IElementType sub_list_close = getCloseParen(token_type);
+                        patternList.done(eatPatternList(builder, bindingName, sub_list_close));
+                    }
+                    syntaxRule.done(eatRemainList(builder, syntax_rule_list_close, AST.AST_SYNTAX_RULE));
+                }
+            }
+        }
+
+        if (builder.getTokenType() != close)
+        {
+            builder.error("Expected '" + close.toString() + "'");
+        } else {
+            builder.advanceLexer();
+            mark_type = success_type;
+        }
+        return mark_type;
+    }
+
   IElementType parseFormLetForms(PsiBuilder builder, IElementType close, IElementType let_type)
   {
     if (builder.getTokenType() == NAME_LITERAL) {
@@ -203,7 +290,11 @@ public class SchemeParser implements PsiParser, SchemeTokens
     }
     helperListAdvance(builder, close, 0);
     IElementType token_type = builder.getTokenType();
+
+    // Because let has that double bracket thing, "("(x 3), (y 2)")"
+    // this line is for the inside bracket
     if (OPEN_SEXP_BRACES.contains(token_type)) {
+        // this will mark the list of bindings
       PsiBuilder.Marker listMarker = builder.mark();
       IElementType list_close = getCloseParen(token_type);
       IElementType sub_list_token_type;
@@ -211,15 +302,42 @@ public class SchemeParser implements PsiParser, SchemeTokens
       helperListAdvance(builder, list_close, 0);
       sub_list_token_type = builder.getTokenType();
       while (sub_list_token_type != null && sub_list_token_type != list_close) {
+
+        // if this is the beginning of a list, ("("x 3), (y 2))
         if (OPEN_SEXP_BRACES.contains(sub_list_token_type)) {
+            // this will mark the contents of this specific binding
           PsiBuilder.Marker subListMarker = builder.mark();
           IElementType sub_list_close = getCloseParen(sub_list_token_type);
           builder.advanceLexer();
           helperListAdvance(builder, sub_list_close, 0);
           IElementType name_token_type = builder.getTokenType();
+
           if (name_token_type == NAME_LITERAL) {
+            // To ensure that name is present in syntax-rules
+            String bindName = builder.getTokenText();
             markAToken(builder, AST.AST_BASIC_ELE_SYMBOL_DEFINE);
-            if (let_type == AST.AST_FORM_LET) {
+
+            if (let_type == AST.AST_FORM_LET_SYNTAX) {
+                // If the keyword that began this function was "let-syntax"
+                if (OPEN_SEXP_BRACES.contains(builder.getTokenType())) {
+                    // if there is an open bracket,
+                    PsiBuilder.Marker syntaxTransformer = builder.mark();
+                    builder.advanceLexer();
+
+                    if (Objects.equals(builder.getTokenText(), "syntax-rules")) {
+                        //, followed by the next "syntax-rules"
+                        report_status(builder, "syntax-rules correctly identified");
+                        builder.advanceLexer();
+                        syntaxTransformer.done(eatRemainTransformer(builder, bindName, sub_list_close, AST.AST_LET_SYNTAX_TRANSFORM));
+                        subListMarker.done(eatRemainList(builder, sub_list_close, AST.AST_IN_FORM_PARAM_LIST_LET_INNER));
+                    } else {
+                        syntaxTransformer.done(eatRemainList(builder, sub_list_close, AST.AST_BAD_ELEMENT));
+                        subListMarker.done(eatRemainList(builder, sub_list_close, AST.AST_BAD_ELEMENT));
+                    }
+                } else {
+                    subListMarker.done(eatRemainList(builder, sub_list_close, AST.AST_BAD_ELEMENT));
+                }
+            } else if (let_type == AST.AST_FORM_LET) {
               subListMarker.done(eatRemainList(builder, sub_list_close, AST.AST_IN_FORM_PARAM_LIST_LET_INNER));
             } else {
               subListMarker.done(eatRemainList(builder, sub_list_close, AST.AST_PLAIN_LIST));
@@ -231,6 +349,7 @@ public class SchemeParser implements PsiParser, SchemeTokens
             subListMarker.done(eatRemainList(builder, sub_list_close, AST.AST_BAD_ELEMENT));
           }
         } else {
+
           if (sub_list_token_type == NAME_LITERAL) {
             markAToken(builder, AST.AST_BAD_ELEMENT);
           } else {
@@ -240,6 +359,7 @@ public class SchemeParser implements PsiParser, SchemeTokens
         helperListAdvance(builder, list_close, 0);
         sub_list_token_type = builder.getTokenType();
       }
+
       if (sub_list_token_type != list_close) {
         listMarker.done(eatRemainList(builder, list_close, AST.AST_BAD_ELEMENT));
       } else {
@@ -248,6 +368,7 @@ public class SchemeParser implements PsiParser, SchemeTokens
     } else if (token_type != close) {
       markAToken(builder, AST.AST_BAD_ELEMENT);
     }
+
     if (helperListAdvance(builder, close, 0)) {
       PsiBuilder.Marker bodyMarker = builder.mark();
       helperEatFormBody(builder, close, bodyMarker);
@@ -636,6 +757,7 @@ public class SchemeParser implements PsiParser, SchemeTokens
         case "let" -> parseFormLetForms(builder, close, AST.AST_FORM_LET);
         case "letrec" -> parseFormLetForms(builder, close, AST.AST_FORM_LETREC);
         case "let*" -> parseFormLetForms(builder, close, AST.AST_FORM_LET_A);
+        case "let-syntax" -> parseFormLetForms(builder, close, AST.AST_FORM_LET_SYNTAX);
         case "list" -> parseFormList(builder, close);
         case "not" -> parseFormNot(builder, close);
         case "or" -> parseFormOr(builder, close);
